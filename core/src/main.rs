@@ -1,0 +1,443 @@
+use std::collections::HashMap;
+use std::{thread, time};
+use std::cell::{RefCell, RefMut};
+use colored::Colorize;
+use std::os::unix::net::{UnixStream, UnixListener};
+use std::io::prelude::*;
+use std::fs::*;
+use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::{Arc, Mutex};
+use std::thread::JoinHandle;
+
+enum Colors {
+    Red,
+    Blue,
+    Yellow,
+    Green,
+}
+
+const BOARD_SIZE: usize = 30;
+const MAX_ITERATIONS: i32 = 200;
+const SLEEP_TIME: u64 = 1000;
+const STARTING_RESOURCES: i32 = 100;
+const RESOURCES_TO_CONQUER_EMPTY_CELL: i32 = 1;
+const RESOURCES_TO_CONQUER_FILLED_CELL: i32 = 10;
+const SOCKET_TO_NODE: &str = "/tmp/drops_to_node.sock";
+const SOCKET_FROM_NODE: &str = "/tmp/drops_from_node.sock";
+
+struct Position {
+    x: i32,
+    y: i32,
+}
+
+struct Player {
+    id: i32,
+    // name: String,
+    color: Colors,
+    starting_position: Position,
+    military: f32,
+    production: f32,
+    research: f32,
+    resources: i32,
+    owned_cells: i32,
+}
+
+impl Player {
+    fn spend_resources(&mut self, amount: i32) {
+        self.resources -= amount;
+    }
+}
+
+
+fn main() {
+
+    // START THREAD CHANNELS
+    let (to_node_tx, sender_rx) = channel();
+    let (receiver_tx, from_node_rx) = channel();
+
+    // START IPC SOCKETS
+    let ipc_sender = start_ipc_sender(sender_rx);
+    let ipc_receiver = start_ipc_receiver(receiver_tx);
+
+
+    start_game_thread(from_node_rx, to_node_tx);
+
+}
+
+fn start_game_thread(from_node_rx: Receiver<String>, to_node_tx: Sender<String>)  {
+
+
+    let mut field: [[i32; BOARD_SIZE]; BOARD_SIZE] = [[0; BOARD_SIZE]; BOARD_SIZE];
+    let mut players = create_players();
+    add_players(&mut field, &mut players);
+
+    let pm = Arc::new(Mutex::new(players));
+    let fm = Arc::new(Mutex::new(field));
+
+    let mut is_playing = true;
+    let mut iterations = 0;
+
+    let player_mutex = Arc::clone(&pm);
+
+    let message_handling_thread = thread::spawn(move || {
+        loop {
+            let r = from_node_rx.recv().unwrap();
+            // print!("FROM NODE {}", r);
+
+            // MESSAGE FORMAT
+            // playerId|(military,production,research)
+            // change player values according to value passed in message
+
+            let player_id = r.split("|").next().unwrap().parse::<i32>().unwrap();
+            let mut player_values = String::from(r.split("|").skip(1).next().unwrap());
+
+            // remove trailing )/n
+            player_values.pop().unwrap();
+            player_values.pop().unwrap();
+            // remove initial (
+            player_values.remove(0);
+
+            let player_values_to_vec = player_values.split(",").collect::<Vec<&str>>();
+            // println!("{:?}", player_values_to_vec);
+            let military = player_values_to_vec[0].parse::<f32>().unwrap();
+            let production = player_values_to_vec[1].parse::<f32>().unwrap();
+            let research = player_values_to_vec[2].parse::<f32>().unwrap();
+
+            // println!("{}, {}, {}", military, production, research);
+
+            // set player values
+            // println!("Locking players on message_handling_thread");
+            let mut players = player_mutex.lock().unwrap();
+            let mut p = players.get(&player_id).unwrap().borrow_mut();
+            (*p).military = military;
+            (*p).production = military;
+            (*p).research = military;
+
+        }
+    });
+
+    let field_mutex = Arc::clone(&fm);
+
+    let message_sending_thread = thread::spawn(move || {
+        loop {
+            let ten_millis = time::Duration::from_millis(500);
+            thread::sleep(ten_millis);
+            let field = field_mutex.lock().unwrap();
+            println!("Sending board");
+            to_node_tx.send(format!("{:?}", field)).unwrap();
+        }
+    });
+
+    let player_mutex = Arc::clone(&pm);
+    let field_mutex = Arc::clone(&fm);
+
+    let game_run_thread = thread::spawn(move || {
+
+        // render(&mut field, &players);
+
+        while is_playing {
+
+            let sleep_time = time::Duration::from_millis(SLEEP_TIME);
+            thread::sleep(sleep_time);
+
+            // println!("Locking players on game_run_thread");
+            let mut players = player_mutex.lock().unwrap();
+            let mut field = field_mutex.lock().unwrap();
+
+
+
+            // let r = from_node_rx.recv().unwrap();
+            // println!("FROM NODE {}", r);
+
+
+            iterations = iterations + 1;
+            if iterations == MAX_ITERATIONS {
+                is_playing = false;
+            }
+
+            let mut new_field = field.clone();
+
+            // println!("Update board");
+            update_board(&mut field, &mut players, &mut new_field);
+
+            // update resources of each player
+            for (player_id, player) in &mut *players {
+                let mut player_ref = player.borrow_mut();
+
+                let resource_gain = RESOURCES_TO_CONQUER_FILLED_CELL as f32 * player_ref.production;
+                player_ref.resources = player_ref.resources + resource_gain.floor() as i32;
+            }
+
+            *field = new_field.clone();
+
+            // render(&mut field, &players);
+        }
+    });
+
+    game_run_thread.join().unwrap();
+    message_handling_thread.join().unwrap();
+    message_sending_thread.join().unwrap();
+}
+
+fn add_players(field: &mut [[i32; 30]; 30], players: &mut HashMap<i32, RefCell<Player>>) {
+    for (player_id, player) in players {
+        field[player.borrow().starting_position.x as usize][player.borrow().starting_position.y as usize] = player.borrow().id;
+    }
+}
+
+fn create_players() -> HashMap<i32, RefCell<Player>> {
+    let player1 = Player {
+        id: 1,
+        // name: "John".to_string(),
+        color: Colors::Red,
+        starting_position: Position { x: 1, y: 1 },
+        military: 0.5,
+        production: 0.5,
+        research: 0.0,
+        resources: STARTING_RESOURCES,
+        owned_cells: 1,
+    };
+
+    let player2 = Player {
+        id: 2,
+        // name: "Jane".to_string(),
+        color: Colors::Blue,
+        starting_position: Position { x: 9, y: 9 },
+        military: 0.6,
+        production: 0.3,
+        research: 0.1,
+        resources: STARTING_RESOURCES,
+        owned_cells: 1,
+    };
+
+    let player3 = Player {
+        id: 3,
+        // name: "Jane".to_string(),
+        color: Colors::Yellow,
+        starting_position: Position { x: 5, y: 18 },
+        military: 1.0,
+        production: 0.0,
+        research: 0.0,
+        resources: STARTING_RESOURCES,
+        owned_cells: 1,
+    };
+
+    let player4 = Player {
+        id: 4,
+        // name: "Jane".to_string(),
+        color: Colors::Green,
+        starting_position: Position { x: 19, y: 19 },
+        military: 0.0,
+        production: 1.0,
+        research: 0.0,
+        resources: STARTING_RESOURCES,
+        owned_cells: 1,
+    };
+
+    let mut players: HashMap<i32, RefCell<Player>> = HashMap::new();
+    players.insert(player1.id, RefCell::new(player1));
+    players.insert(player2.id, RefCell::new(player2));
+    players.insert(player3.id, RefCell::new(player3));
+    players.insert(player4.id, RefCell::new(player4));
+    players
+}
+
+fn start_ipc_receiver(tx: Sender<String>) -> JoinHandle<()> {
+    return thread::spawn(move || {
+        let mut stream = match UnixStream::connect(SOCKET_FROM_NODE) {
+            Ok(stream) => {
+                println!("Connected to node");
+                stream
+            }
+            Err(err) => {
+                panic!("{}", err);
+            }
+        };
+
+        loop {
+            let mut buffer = [0; 10000];
+            match stream.read(&mut buffer) {
+                Ok(size) => {
+                    // println!("Received {} bytes", size);
+                    let received = String::from_utf8_lossy(&buffer[0..size]);
+                    if size > 0 {
+                        tx.send(received.to_string()).unwrap();
+                    }
+
+                }
+                Err(err) => {
+                    println!("{}", err);
+                }
+            }
+
+            // let mut message = String::new();
+            // match stream.read_to_string(&mut message) {
+            //     Ok(_) => {
+            //         println!("Received {}", message);
+            //         tx.send(message).unwrap();
+            //     }
+            //     Err(err) => {
+            //         println!("{}", err);
+            //     }
+            // }
+
+        }
+    });
+}
+
+fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
+    return thread::spawn(move || {
+        match remove_file(SOCKET_TO_NODE) {
+            Ok(_) => println!("Removed {}", SOCKET_TO_NODE),
+            Err(_) => (),
+        }
+        let mut socket = match UnixListener::bind(SOCKET_TO_NODE) {
+            Ok(listener) => listener,
+            Err(err) => {
+                panic!("{}", err);
+            }
+        };
+
+        match socket.accept() {
+            Ok((mut socket, addr)) => {
+                println!("Got a listenting client");
+
+                loop {
+                    let received = match rx.recv() {
+                        Ok(received) => received,
+                        Err(err) => {
+                            panic!("{}", err);
+                        }
+                    };
+                    // println!("From game loop to node: {}", received);
+
+                    // let ten_millis = time::Duration::from_millis(SLEEP_TIME);
+                    // thread::sleep(ten_millis);
+                    //
+                    // // println!("Sending message");
+                    //
+                    // let to_send = format!("{:?}", field);
+                    let to_send = format!("{}", received);
+
+                    match socket.write_all(to_send.as_bytes()) {
+                        Ok(_) => (),
+                        Err(err) => println!("{}", err),
+                    }
+                    socket.flush().unwrap();
+                    // println!("Message sent");
+                }
+            }
+            Err(e) => {
+                println!("Connection lost")
+            }
+        }
+    });
+}
+
+fn update_board(field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE], players: &mut HashMap<i32, RefCell<Player>>, new_field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE]) {
+
+    println!("mil player 1: {:?}", players.get(&1).unwrap().borrow().military);
+
+    for x in 0..BOARD_SIZE {
+        for y in 0..BOARD_SIZE {
+            if field[x][y] == 0 {
+                continue;
+            }
+
+            let mut has_conquered = false;
+            let cell_player_id = field[x][y];
+
+            let x_start = if x > 0 { x - 1 } else { x };
+            let x_end = if x < BOARD_SIZE - 1 { x + 1 } else { x };
+            let y_start = if y > 0 { y - 1 } else { y };
+            let y_end = if y < BOARD_SIZE - 1 { y + 1 } else { y };
+
+            // for every cell around the current cell
+            for i in x_start..x_end + 1 {
+                for j in y_start..y_end + 1 {
+                    if has_conquered {
+                        continue;
+                    }
+
+                    if field[i][j] != cell_player_id && new_field[i][j] != cell_player_id {
+                        if field[i][j] == 0 {
+                            let player = &mut players.get_mut(&cell_player_id).unwrap().borrow_mut();
+
+                            if player.resources > 0 && new_field[i][j] == 0 {
+                                player.spend_resources(RESOURCES_TO_CONQUER_EMPTY_CELL);
+                                player.owned_cells = player.owned_cells + 1;
+
+                                new_field[i][j] = cell_player_id;
+                                has_conquered = true;
+                            }
+                        } else {
+                            let current_player = &mut players.get(&cell_player_id).unwrap().borrow_mut();
+                            let enemy_player = &mut players.get(&field[i][j]).unwrap().borrow_mut();
+
+                            if has_conquered_cell(current_player, enemy_player, &(i as i32), &(j as i32)) {
+                                if can_conquer_cell(current_player) {
+                                    // println!("{} has conquered {}", current_player.id, enemy_player.id);
+
+                                    current_player.spend_resources(RESOURCES_TO_CONQUER_FILLED_CELL);
+
+                                    current_player.owned_cells = current_player.owned_cells + 1;
+                                    enemy_player.owned_cells = enemy_player.owned_cells - 1;
+
+                                    new_field[i][j] = cell_player_id;
+                                    has_conquered = true;
+                                }
+                            } else {
+                                new_field[i][j] = field[i][j];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn can_conquer_cell(current_player: &mut RefMut<Player>) -> bool {
+    current_player.resources > 0 && current_player.resources - RESOURCES_TO_CONQUER_FILLED_CELL > 0
+}
+
+fn has_conquered_cell(current_player: &mut RefMut<Player>, enemy_player: &mut RefMut<Player>, i: &i32, j: &i32) -> bool {
+
+    // if it's the starting cell, cannot conquer
+    if i == &enemy_player.starting_position.x && j == &enemy_player.starting_position.y {
+        return false;
+    }
+
+    current_player.military > enemy_player.military
+}
+
+
+fn render(field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE], players: &HashMap<i32, RefCell<Player>>) {
+    print!("\x1B[2J\x1B[1;1H");
+    println!("-----------------------------------------------------");
+    for x in 0..BOARD_SIZE {
+        for y in 0..BOARD_SIZE {
+            if field[x][y] == 0 {
+                print!(" - ");
+            } else {
+                let player = &*players.get(&field[x][y]).unwrap().borrow();
+
+                match player.color {
+                    Colors::Red => print!(" {} ", player.id.to_string().red()),
+                    Colors::Blue => print!(" {} ", player.id.to_string().blue()),
+                    Colors::Yellow => print!(" {} ", player.id.to_string().yellow()),
+                    Colors::Green => print!(" {} ", player.id.to_string().green()),
+                }
+
+                // print!(" \x1b[93m{}\x1b[0m ", player.id);
+            }
+            // print!("{}  ", field[x][y]);
+        }
+        print!("\n");
+    }
+    println!("-----------------------------------------------------\n");
+    for (player_id, player) in players {
+        println!("Player {}: res {} | cells {}", player_id, player.borrow().resources, player.borrow().owned_cells);
+    }
+    print!("-----------------------------------------------------\n");
+}

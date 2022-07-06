@@ -1,0 +1,15 @@
+<script src="https://unpkg.com/colyseus.js@^0.14.0/dist/colyseus.js"></script>
+<script>
+    var client = new Colyseus.Client('ws://localhost:7000');
+
+    client.joinOrCreate("battle").then(room => {
+        console.log(room.sessionId, "joined", room.name);
+    }).catch(e => {
+        console.log("JOIN ERROR", e);
+    });
+</script>
+
+
+
+<div>Current game</div>
+<div id="current-game"></div>
