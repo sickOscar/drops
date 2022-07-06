@@ -56,8 +56,8 @@ fn main() {
     let (receiver_tx, from_node_rx) = channel();
 
     // START IPC SOCKETS
-    let ipc_sender = start_ipc_sender(sender_rx);
-    let ipc_receiver = start_ipc_receiver(receiver_tx);
+    start_ipc_sender(sender_rx);
+    start_ipc_receiver(receiver_tx);
 
 
     start_game_thread(from_node_rx, to_node_tx);
@@ -100,14 +100,14 @@ fn start_game_thread(from_node_rx: Receiver<String>, to_node_tx: Sender<String>)
             let player_values_to_vec = player_values.split(",").collect::<Vec<&str>>();
             // println!("{:?}", player_values_to_vec);
             let military = player_values_to_vec[0].parse::<f32>().unwrap();
-            let production = player_values_to_vec[1].parse::<f32>().unwrap();
-            let research = player_values_to_vec[2].parse::<f32>().unwrap();
+            // let production = player_values_to_vec[1].parse::<f32>().unwrap();
+            // let research = player_values_to_vec[2].parse::<f32>().unwrap();
 
             // println!("{}, {}, {}", military, production, research);
 
             // set player values
             // println!("Locking players on message_handling_thread");
-            let mut players = player_mutex.lock().unwrap();
+            let players = player_mutex.lock().unwrap();
             let mut p = players.get(&player_id).unwrap().borrow_mut();
             (*p).military = military;
             (*p).production = military;
@@ -120,11 +120,11 @@ fn start_game_thread(from_node_rx: Receiver<String>, to_node_tx: Sender<String>)
 
     let message_sending_thread = thread::spawn(move || {
         loop {
-            let ten_millis = time::Duration::from_millis(500);
+            let ten_millis = time::Duration::from_millis(1000);
             thread::sleep(ten_millis);
             let field = field_mutex.lock().unwrap();
-            println!("Sending board");
-            to_node_tx.send(format!("{:?}", field)).unwrap();
+            // println!("Sending board");
+            to_node_tx.send(format!("*{:?}\n", field)).unwrap();
         }
     });
 
@@ -133,22 +133,13 @@ fn start_game_thread(from_node_rx: Receiver<String>, to_node_tx: Sender<String>)
 
     let game_run_thread = thread::spawn(move || {
 
-        // render(&mut field, &players);
-
         while is_playing {
 
             let sleep_time = time::Duration::from_millis(SLEEP_TIME);
             thread::sleep(sleep_time);
 
-            // println!("Locking players on game_run_thread");
             let mut players = player_mutex.lock().unwrap();
             let mut field = field_mutex.lock().unwrap();
-
-
-
-            // let r = from_node_rx.recv().unwrap();
-            // println!("FROM NODE {}", r);
-
 
             iterations = iterations + 1;
             if iterations == MAX_ITERATIONS {
@@ -161,7 +152,7 @@ fn start_game_thread(from_node_rx: Receiver<String>, to_node_tx: Sender<String>)
             update_board(&mut field, &mut players, &mut new_field);
 
             // update resources of each player
-            for (player_id, player) in &mut *players {
+            for (_player_id, player) in &mut *players {
                 let mut player_ref = player.borrow_mut();
 
                 let resource_gain = RESOURCES_TO_CONQUER_FILLED_CELL as f32 * player_ref.production;
@@ -170,17 +161,23 @@ fn start_game_thread(from_node_rx: Receiver<String>, to_node_tx: Sender<String>)
 
             *field = new_field.clone();
 
-            // render(&mut field, &players);
+            render(&mut field, &players, &iterations);
         }
     });
 
     game_run_thread.join().unwrap();
-    message_handling_thread.join().unwrap();
+    match message_handling_thread.join() {
+        Ok(_) => println!("Message handling thread joined"),
+        Err(str) => {
+            println!("{:?}", str);
+            panic!("Message handling thread failed to join");
+        }
+    }
     message_sending_thread.join().unwrap();
 }
 
-fn add_players(field: &mut [[i32; 30]; 30], players: &mut HashMap<i32, RefCell<Player>>) {
-    for (player_id, player) in players {
+fn add_players(field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE], players: &mut HashMap<i32, RefCell<Player>>) {
+    for (_player_id, player) in players {
         field[player.borrow().starting_position.x as usize][player.borrow().starting_position.y as usize] = player.borrow().id;
     }
 }
@@ -202,7 +199,7 @@ fn create_players() -> HashMap<i32, RefCell<Player>> {
         id: 2,
         // name: "Jane".to_string(),
         color: Colors::Blue,
-        starting_position: Position { x: 9, y: 9 },
+        starting_position: Position { x: BOARD_SIZE as i32 - 1, y: BOARD_SIZE as i32 - 1 },
         military: 0.6,
         production: 0.3,
         research: 0.1,
@@ -214,7 +211,7 @@ fn create_players() -> HashMap<i32, RefCell<Player>> {
         id: 3,
         // name: "Jane".to_string(),
         color: Colors::Yellow,
-        starting_position: Position { x: 5, y: 18 },
+        starting_position: Position { x: BOARD_SIZE as i32 / 2, y: BOARD_SIZE as i32 / 2 },
         military: 1.0,
         production: 0.0,
         research: 0.0,
@@ -226,7 +223,7 @@ fn create_players() -> HashMap<i32, RefCell<Player>> {
         id: 4,
         // name: "Jane".to_string(),
         color: Colors::Green,
-        starting_position: Position { x: 19, y: 19 },
+        starting_position: Position { x: 1, y: BOARD_SIZE as i32 - 1 },
         military: 0.0,
         production: 1.0,
         research: 0.0,
@@ -291,7 +288,7 @@ fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
             Ok(_) => println!("Removed {}", SOCKET_TO_NODE),
             Err(_) => (),
         }
-        let mut socket = match UnixListener::bind(SOCKET_TO_NODE) {
+        let socket = match UnixListener::bind(SOCKET_TO_NODE) {
             Ok(listener) => listener,
             Err(err) => {
                 panic!("{}", err);
@@ -299,7 +296,7 @@ fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
         };
 
         match socket.accept() {
-            Ok((mut socket, addr)) => {
+            Ok((mut socket, _addr)) => {
                 println!("Got a listenting client");
 
                 loop {
@@ -327,7 +324,7 @@ fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
                     // println!("Message sent");
                 }
             }
-            Err(e) => {
+            Err(_e) => {
                 println!("Connection lost")
             }
         }
@@ -336,10 +333,11 @@ fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
 
 fn update_board(field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE], players: &mut HashMap<i32, RefCell<Player>>, new_field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE]) {
 
-    println!("mil player 1: {:?}", players.get(&1).unwrap().borrow().military);
+    // println!("mil player 1: {:?}", players.get(&1).unwrap().borrow().military);
 
     for x in 0..BOARD_SIZE {
         for y in 0..BOARD_SIZE {
+            
             if field[x][y] == 0 {
                 continue;
             }
@@ -412,7 +410,7 @@ fn has_conquered_cell(current_player: &mut RefMut<Player>, enemy_player: &mut Re
 }
 
 
-fn render(field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE], players: &HashMap<i32, RefCell<Player>>) {
+fn render(field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE], players: &HashMap<i32, RefCell<Player>>, iterations: &i32) {
     print!("\x1B[2J\x1B[1;1H");
     println!("-----------------------------------------------------");
     for x in 0..BOARD_SIZE {
@@ -436,6 +434,7 @@ fn render(field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE], players: &HashMap<i32, Re
         print!("\n");
     }
     println!("-----------------------------------------------------\n");
+    println!("Iteration: {}", iterations);
     for (player_id, player) in players {
         println!("Player {}: res {} | cells {}", player_id, player.borrow().resources, player.borrow().owned_cells);
     }
