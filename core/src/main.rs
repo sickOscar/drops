@@ -8,6 +8,8 @@ use std::fs::*;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
+use rand::prelude::SliceRandom;
+use rand::thread_rng;
 
 enum Colors {
     Red,
@@ -19,7 +21,7 @@ enum Colors {
 const BOARD_SIZE: usize = 30;
 const MAX_ITERATIONS: i32 = 200;
 const SLEEP_TIME: u64 = 1000;
-const STARTING_RESOURCES: i32 = 100;
+const STARTING_RESOURCES: i32 = (BOARD_SIZE * BOARD_SIZE) as i32;
 const RESOURCES_TO_CONQUER_EMPTY_CELL: i32 = 1;
 const RESOURCES_TO_CONQUER_FILLED_CELL: i32 = 10;
 const SOCKET_TO_NODE: &str = "/tmp/drops_to_node.sock";
@@ -58,7 +60,6 @@ fn main() {
     // START IPC SOCKETS
     start_ipc_sender(sender_rx);
     start_ipc_receiver(receiver_tx);
-
 
     start_game_thread(from_node_rx, to_node_tx);
 
@@ -195,47 +196,47 @@ fn create_players() -> HashMap<i32, RefCell<Player>> {
         owned_cells: 1,
     };
 
-    let player2 = Player {
-        id: 2,
-        // name: "Jane".to_string(),
-        color: Colors::Blue,
-        starting_position: Position { x: BOARD_SIZE as i32 - 1, y: BOARD_SIZE as i32 - 1 },
-        military: 0.6,
-        production: 0.3,
-        research: 0.1,
-        resources: STARTING_RESOURCES,
-        owned_cells: 1,
-    };
-
-    let player3 = Player {
-        id: 3,
-        // name: "Jane".to_string(),
-        color: Colors::Yellow,
-        starting_position: Position { x: BOARD_SIZE as i32 / 2, y: BOARD_SIZE as i32 / 2 },
-        military: 1.0,
-        production: 0.0,
-        research: 0.0,
-        resources: STARTING_RESOURCES,
-        owned_cells: 1,
-    };
-
-    let player4 = Player {
-        id: 4,
-        // name: "Jane".to_string(),
-        color: Colors::Green,
-        starting_position: Position { x: 1, y: BOARD_SIZE as i32 - 1 },
-        military: 0.0,
-        production: 1.0,
-        research: 0.0,
-        resources: STARTING_RESOURCES,
-        owned_cells: 1,
-    };
+    // let player2 = Player {
+    //     id: 2,
+    //     // name: "Jane".to_string(),
+    //     color: Colors::Blue,
+    //     starting_position: Position { x: BOARD_SIZE as i32 - 1, y: BOARD_SIZE as i32 - 1 },
+    //     military: 0.6,
+    //     production: 0.3,
+    //     research: 0.1,
+    //     resources: STARTING_RESOURCES,
+    //     owned_cells: 1,
+    // };
+    //
+    // let player3 = Player {
+    //     id: 3,
+    //     // name: "Jane".to_string(),
+    //     color: Colors::Yellow,
+    //     starting_position: Position { x: BOARD_SIZE as i32 / 2, y: BOARD_SIZE as i32 / 2 },
+    //     military: 1.0,
+    //     production: 0.0,
+    //     research: 0.0,
+    //     resources: STARTING_RESOURCES,
+    //     owned_cells: 1,
+    // };
+    //
+    // let player4 = Player {
+    //     id: 4,
+    //     // name: "Jane".to_string(),
+    //     color: Colors::Green,
+    //     starting_position: Position { x: 1, y: BOARD_SIZE as i32 - 1 },
+    //     military: 0.0,
+    //     production: 1.0,
+    //     research: 0.0,
+    //     resources: STARTING_RESOURCES,
+    //     owned_cells: 1,
+    // };
 
     let mut players: HashMap<i32, RefCell<Player>> = HashMap::new();
     players.insert(player1.id, RefCell::new(player1));
-    players.insert(player2.id, RefCell::new(player2));
-    players.insert(player3.id, RefCell::new(player3));
-    players.insert(player4.id, RefCell::new(player4));
+    // players.insert(player2.id, RefCell::new(player2));
+    // players.insert(player3.id, RefCell::new(player3));
+    // players.insert(player4.id, RefCell::new(player4));
     players
 }
 
@@ -255,7 +256,6 @@ fn start_ipc_receiver(tx: Sender<String>) -> JoinHandle<()> {
             let mut buffer = [0; 10000];
             match stream.read(&mut buffer) {
                 Ok(size) => {
-                    // println!("Received {} bytes", size);
                     let received = String::from_utf8_lossy(&buffer[0..size]);
                     if size > 0 {
                         tx.send(received.to_string()).unwrap();
@@ -266,17 +266,6 @@ fn start_ipc_receiver(tx: Sender<String>) -> JoinHandle<()> {
                     println!("{}", err);
                 }
             }
-
-            // let mut message = String::new();
-            // match stream.read_to_string(&mut message) {
-            //     Ok(_) => {
-            //         println!("Received {}", message);
-            //         tx.send(message).unwrap();
-            //     }
-            //     Err(err) => {
-            //         println!("{}", err);
-            //     }
-            // }
 
         }
     });
@@ -306,14 +295,7 @@ fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
                             panic!("{}", err);
                         }
                     };
-                    // println!("From game loop to node: {}", received);
 
-                    // let ten_millis = time::Duration::from_millis(SLEEP_TIME);
-                    // thread::sleep(ten_millis);
-                    //
-                    // // println!("Sending message");
-                    //
-                    // let to_send = format!("{:?}", field);
                     let to_send = format!("{}", received);
 
                     match socket.write_all(to_send.as_bytes()) {
@@ -321,7 +303,6 @@ fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
                         Err(err) => println!("{}", err),
                     }
                     socket.flush().unwrap();
-                    // println!("Message sent");
                 }
             }
             Err(_e) => {
@@ -337,7 +318,7 @@ fn update_board(field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE], players: &mut HashM
 
     for x in 0..BOARD_SIZE {
         for y in 0..BOARD_SIZE {
-            
+
             if field[x][y] == 0 {
                 continue;
             }
@@ -349,6 +330,73 @@ fn update_board(field: &mut [[i32; BOARD_SIZE]; BOARD_SIZE], players: &mut HashM
             let x_end = if x < BOARD_SIZE - 1 { x + 1 } else { x };
             let y_start = if y > 0 { y - 1 } else { y };
             let y_end = if y < BOARD_SIZE - 1 { y + 1 } else { y };
+
+            // make a list of tuples with the coordinates of the neighbors
+            let mut neighbors: Vec<(i32, i32)> = Vec::new();
+            for x_neighbor in x_start..=x_end {
+                for y_neighbor in y_start..=y_end {
+
+                    // exclude the current cell
+                    if x_neighbor == x && y_neighbor == y {
+                        continue;
+                    }
+
+                    // exclude cells that are owned by the player both on field and new_field
+                    if field[x_neighbor][y_neighbor] == cell_player_id {
+                        continue;
+                    }
+
+                    neighbors.push((x_neighbor as i32, y_neighbor as i32));
+                }
+            }
+
+            // shuffle the list of neighbors
+            neighbors.shuffle(&mut thread_rng());
+
+            for (x_neighbor, y_neighbor) in neighbors {
+
+                if has_conquered {
+                    continue;
+                }
+
+                let neighbor_value = field[x_neighbor as usize][y_neighbor as usize];
+                let neighbor_value_on_new_field = new_field[x_neighbor as usize][y_neighbor as usize];
+
+                if neighbor_value == 0 {
+                    let player = &mut players.get_mut(&cell_player_id).unwrap().borrow_mut();
+
+                    if player.resources > 0 && neighbor_value_on_new_field == 0 {
+                        player.spend_resources(RESOURCES_TO_CONQUER_EMPTY_CELL);
+                        player.owned_cells = player.owned_cells + 1;
+
+                        new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
+                        has_conquered = true;
+                    }
+                } else {
+
+                    let mut current_player = &mut players.get(&cell_player_id).unwrap().borrow_mut();
+                    let mut enemy_player = &mut players.get(&neighbor_value).unwrap().borrow_mut();
+
+                    if has_conquered_cell(&mut current_player, &mut enemy_player, &x_neighbor, &y_neighbor) {
+                        if can_conquer_cell(current_player) {
+
+                            current_player.spend_resources(RESOURCES_TO_CONQUER_FILLED_CELL);
+
+                            current_player.owned_cells = current_player.owned_cells + 1;
+                            enemy_player.owned_cells = enemy_player.owned_cells - 1;
+
+                            new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
+                            has_conquered = true;
+                        }
+                    } else {
+                        new_field[x_neighbor as usize][y_neighbor as usize] = neighbor_value;
+                    }
+                }
+
+
+
+            }
+
 
             // for every cell around the current cell
             for i in x_start..x_end + 1 {
