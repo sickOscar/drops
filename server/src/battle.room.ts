@@ -5,14 +5,20 @@ import {Field, FieldCol, RoomState} from "./state";
 import {coreSendingSocket, coreListeningSocket} from "./ipc_sockets";
 
 export class BattleRoom extends Room {
+
+    autoDispose = false;
+
+    playerMapping:{[sub:string]: number} = {}
+    static polayerIndex = 1;
+
     // When room is initialized
-    async onCreate (options: any) {
-        console.log('onCreate');
+    onCreate (options: any) {
+        console.log('onCreateBattle');
         this.setState(new RoomState());
 
         let lastRemainingToken = "";
 
-        (await coreListeningSocket).on('data', (data) => {
+        coreListeningSocket.then(socket => socket.on('data', (data) => {
 
                 const fieldStrings = data.toString().split('\n');
                 if (fieldStrings[0] && !(fieldStrings[0].startsWith("*"))) {
@@ -50,7 +56,7 @@ export class BattleRoom extends Room {
                     }
                 }
 
-        })
+        }))
 
     }
 
@@ -62,9 +68,40 @@ export class BattleRoom extends Room {
 
     // When client successfully join the room
     async onJoin (client: Client, options: any, auth: any) {
-        console.log('onJoin');
+        console.log(`${client.sessionId} joined battle `);
 
-        (await coreSendingSocket).write(`1|(${Math.random()},${Math.random()},${Math.random()})\n`);
+
+        if (!this.playerMapping[options.sub]) {
+            console.log(`options.sub`, options.sub)
+            this.playerMapping[options.sub] = BattleRoom.polayerIndex;
+            BattleRoom.polayerIndex++;
+        }
+
+        if (this.clients.length === 2) {
+            this.broadcast('battle_start');
+
+            coreSendingSocket.then(socket => {
+                const playerIds = Object.values(this.playerMapping);
+                socket.write(`play:${playerIds.join('|')}`);
+            })
+
+        }
+
+        this.onMessage("action", (client:Client, message: String) => {
+            // console.log(`action`, message);
+
+            const playerId = this.playerMapping[options.sub];
+
+            coreSendingSocket.then(socket => {
+                const toSend = `|${playerId}|(${message})\n`;
+                console.log(`toSend`, toSend)
+                socket.write(toSend);
+
+            })
+
+        })
+
+        // (await coreSendingSocket).write(`|1|(${Math.random()},${Math.random()},${Math.random()})\n`);
     }
 
     // When a client leaves the room
@@ -74,7 +111,7 @@ export class BattleRoom extends Room {
 
     // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
     onDispose () {
-        console.log('onDispose');
+        console.log('onDispose battle');
     }
 
 }

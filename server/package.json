@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node index.ts",
-    "joy": "npx serve -s ./static -p 8000"
+    "joy": "npx serve -s ./static/joypad -p 8000",
+    "viewer": "npx serve -s ./static/viewer -p 8001"
   },
   "author": "",
   "license": "ISC",

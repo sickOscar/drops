@@ -45,7 +45,7 @@ async function startSendingSocket(): Promise<net.Socket> {
                 //     const military = Math.random();
                 //     const production = Math.random();
                 //     const research = Math.random();
-                //     socket.write(`1|(${military},${production},${research})\n`);
+                //     socket.write(`|1|(${military},${production},${research})\n`);
                 // }, 100)
             })
             .on("error", function (err) {
@@ -74,15 +74,15 @@ async function createCoreListeningSocket(): Promise<net.Socket> {
             //     console.log('Got data');
             // })
             socket.on('error', (err) => {
-                console.log('Error: ' + err);
+                // console.log('Error: ' + err);
                 reject(err);
             })
             socket.on('close', (hadErr) => {
-                console.log('Closed: ' + hadErr);
+                // console.log('Closed: ' + hadErr);
             })
         })
     } catch (err) {
-        console.log("Failed to start listening socket, retry in 5 second...");
+        // console.log("Failed to start listening socket, retry in 5 second...");
         await sleep(5000);
         return createCoreListeningSocket();
     }
