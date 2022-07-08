@@ -75,6 +75,8 @@ pub fn handle_initial_commands(from_node_rx: &Receiver<String>, mut field: &mut 
         add_players_to_field(&mut field, &mut players);
 
         *is_playing = true;
+    } else if r.starts_with("quit") {
+        *is_playing = false;
     }
 }
 

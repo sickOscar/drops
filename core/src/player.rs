@@ -1,12 +1,12 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::collections::HashMap;
 use std::cell::{RefCell};
-
+use serde::{Serialize};
 
 use crate::utils::{Colors, Position};
 
 
-
+#[derive(Serialize, Debug)]
 pub struct Player {
     pub id: i32,
     // name: String,

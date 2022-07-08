@@ -13,8 +13,8 @@ use ipc::{start_ipc_sender, start_ipc_receiver};
 use game::{game_loop};
 
 pub const MAX_PLAYERS: i8 = 8;
-pub const BOARD_SIZE: usize = 30;
-pub const MAX_ITERATIONS: i32 = 500;
+pub const BOARD_SIZE: usize = 40;
+pub const MAX_ITERATIONS: i32 = 160;
 pub const TIME_BETWEEN_ITERATIONS: u64 = 500;
 pub const STARTING_RESOURCES: i32 = (BOARD_SIZE * BOARD_SIZE) as i32;
 pub const RESOURCES_TO_CONQUER_EMPTY_CELL: i32 = 1;

@@ -80,11 +80,11 @@ async function createCoreListeningSocket(): Promise<net.Socket> {
             //     console.log('Got data');
             // })
             socket.on('error', (err) => {
-                console.log('Error: ' + err);
+                // console.log('Error: ' + err);
                 reject(err);
             })
             socket.on('close', (hadErr) => {
-                console.log('Closed: ' + hadErr);
+                // console.log('Closed: ' + hadErr);
             })
         })
     } catch (err) {

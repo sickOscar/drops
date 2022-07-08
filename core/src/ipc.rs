@@ -45,7 +45,14 @@ pub fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
     return thread::spawn(move || loop {
         println!("{}", "Serving IPC socket...".yellow());
 
-        remove_file(super::SOCKET_TO_NODE).unwrap();
+        match remove_file(super::SOCKET_TO_NODE) {
+            Ok(_) => {
+                println!("{}", "Removing old socket...".yellow());
+            }
+            Err(_) => {
+                println!("{}", "No old socket to remove...".yellow());
+            }
+        }
 
         let socket = match UnixListener::bind(super::SOCKET_TO_NODE) {
             Ok(listener) => {

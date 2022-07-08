@@ -1,5 +1,6 @@
 <script src="https://cdn.auth0.com/js/auth0-spa-js/1.20/auth0-spa-js.production.js"></script>
 <script src="https://unpkg.com/colyseus.js@^0.14.0/dist/colyseus.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/p5.min.js"></script>
 <style>
     * {
         margin: 0;
@@ -25,6 +26,10 @@
     }
 
     .hidden {
+        display: none;
+    }
+
+    #board-box {
         display: none;
     }
 </style>
@@ -64,11 +69,23 @@
             <span id="research-value" class="range-input-value"></span>
         </p>
     </div>
+    <div>
+        <span id="resources-box"></span> | <span id="score-box"></span>
+    </div>
 </div>
+
+<div id="board-box"></div>
 
 <script>
 
-
+    let field = [
+        [0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 2, 0, 0],
+        [0, 2, 2, 0, 0],
+    ];
     let auth0 = null;
     const fetchAuthConfig = () => fetch("/auth_config.json");
 
@@ -132,59 +149,90 @@
         });
     };
 
+    function showBattleUi() {
+        document.getElementById("waiting-box").style.display = "none";
+        document.getElementById("joypad-box").style.display = "block";
+        document.getElementById("board-box").style.display = "block";
+    }
+
+    function showLobbyUi() {
+        document.getElementById("waiting-box").style.display = "block";
+        document.getElementById("joypad-box").style.display = "none";
+    }
+
     async function initJoypad() {
         const client = new Colyseus.Client('ws://localhost:7000');
 
-        let battle_room = undefined;
+        let battleRoom = undefined;
         const token = auth0.getTokenSilently()
         const user = await auth0.getUser()
 
         console.log(`user`, user)
-        
-        const relayRoom = await client.joinOrCreate("relay", {
-            name: user.nickname,
-            sub: user.sub
-        })
+
+        let relayRoom = await client.join("relay")
+        relayRoom.send("identity", `${user.sub}:${user.name}`)
 
         console.log("Joined lobby");
 
-        // relayRoom.onStateChange(state => {
-        //
-        //     const pl = [];
-        //     state.players.forEach(player => {
-        //         pl.push(player.name);
-        //     });
-        //
-        //     console.log(pl)
-        // });
+        await new Promise((resolve) => {
+            relayRoom.onMessage("battle_ready", () => {
+                console.log("Battle ready");
+                relayRoom.leave();
+                resolve();
+            });
+        })
 
-        relayRoom.onMessage("battle_ready", () => {
-            console.log("Battle ready");
-            relayRoom.leave()
+        battleRoom = await client.join("battle")
+        battleRoom.send("identity", `${user.sub}:${user.name}`)
 
-            client.join("battle", {
-                name: user.nickname,
-                sub: user.sub
-            })
-                .then(room => {
+        document.getElementById("waiting-box").style.display = "block";
 
-                    document.getElementById("waiting-box").style.display = "block";
+        battleRoom.onMessage("battle_start", () => {
 
+            console.log("Battle started");
 
-                    console.log(room.sessionId, "joined", room.name);
-                    room.onMessage("battle_start", () => {
-                        console.log("Battle started");
-                        document.getElementById("waiting-box").style.display = "none";
-                        document.getElementById("joypad-box").style.display = "block";
-                        battle_room = room;
+            showBattleUi();
+
+            battleRoom.onStateChange(state => {
+
+                field = []
+                state.field.cols.forEach((col) => {
+                    const column = [];
+                    col.col.forEach((cell) => {
+                        column.push(cell);
                     });
-                })
-                .catch(e => {
-                    console.log("JOIN ERROR", e);
+                    field.push(column);
                 });
 
+                let me = [];
+                state.players.forEach((player) => {
+                    if (player.sub === user.sub) {
+                        me = player;
+                    }
+                });
+
+                if (me) {
+                    document.getElementById("resources-box").innerHTML = `resources ${me.resources}`;
+                    document.getElementById("score-box").innerHTML = `score ${me.score}`;
+                }
+
+            })
 
         });
+
+        battleRoom.onMessage("endgame", async () => {
+            console.log("Battle ended");
+            battleRoom.leave();
+
+            showLobbyUi();
+
+            relayRoom = client.join("relay")
+                .then(room => {
+                    room.send("identity", `${user.sub}:${user.name}`)
+                })
+
+        });
+
 
 
         const maxTotal = 100; // define the max sum of values
@@ -241,11 +289,55 @@
 
                 });
 
-                battle_room.send('action', toSend.join(','));
+                battleRoom.send('action', toSend.join(','));
 
             });
         });
     }
+
+
+    //
+    //
+    //
+    // DRAW
+    //
+    //
+    //
+
+    const colors = [
+        '#000000',
+        '#FF0000',
+        '#00FF00',
+        '#0000FF',
+        '#FFFF00',
+        '#FF00FF',
+        '#00FFFF',
+        '#FFFFFF',
+    ];
+
+    function setup() {
+        const canvas = createCanvas(200, 200);
+        canvas.parent('board-box');
+        background(0);
+    }
+
+    function draw() {
+
+        const CELL_SIZE = 5;
+
+
+        background(0);
+        field.forEach((column, x) => {
+            column.forEach((cell, y) => {
+                fill(colors[cell]);
+                noStroke();
+                rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            });
+        });
+    }
+
+
+
 
 
 </script>

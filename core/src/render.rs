@@ -8,6 +8,7 @@ use super::utils::Colors;
 
 pub fn render(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], players: &HashMap<i32, RefCell<Player>>, iterations: &i32) {
     print!("\x1B[2J\x1B[1;1H");
+    println!("iteration {}", iterations);
     println!("-----------------------------------------------------");
     for x in 0..super::BOARD_SIZE {
         for y in 0..super::BOARD_SIZE {

@@ -1,13 +1,13 @@
-export class Queue {
+export class Queue<T> {
     tail = -1;
-    _queue   = [];
+    _queue:any[]  = [];
 
-    enqueue(node) {
+    enqueue(node:T) {
         this.tail++;
         this._queue[this.tail] = node;
     }
 
-    dequeue(){
+    dequeue():T{
         const removed = this._queue.shift();
         this.tail--;
         return removed;
@@ -28,6 +28,10 @@ export class Queue {
     purge() {
         this._queue = [];
         this.tail = -1;
+    }
+
+    has(matchingFun: (T) => boolean) {
+        return this._queue.find(matchingFun) !== undefined;
     }
 
 }

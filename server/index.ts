@@ -22,9 +22,9 @@ async function startGameServer() {
     gameServer.define('lobby', LobbyRoom);
     gameServer.define('relay', DropRelayRoom);
 
-    // matchMaker.createRoom('relay', {}).then(room => {
-    //     console.log('created relay room');
-    // })
+    matchMaker.createRoom('relay', {}).then(room => {
+        console.log('created relay room');
+    })
     matchMaker.createRoom("battle", { /* options */ })
         .then(room => {
             console.log('created battle room');

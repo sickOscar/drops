@@ -11,19 +11,26 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
 
     let mut new_field:[[i32; super::BOARD_SIZE]; super::BOARD_SIZE] = field.clone();
 
-    for x in 0..super::BOARD_SIZE {
-        for y in 0..super::BOARD_SIZE {
-            if field[x][y] == 0 {
+    let mut cols = (0..super::BOARD_SIZE).collect::<Vec<_>>();
+    cols.shuffle(&mut thread_rng());
+
+    let mut rows = (0..super::BOARD_SIZE).collect::<Vec<_>>();
+    rows.shuffle(&mut thread_rng());
+
+    for x in &rows {
+        for y in &cols {
+
+            if field[*x][*y] == 0 {
                 continue;
             }
 
             let mut has_conquered = false;
-            let cell_player_id = field[x][y];
+            let cell_player_id = field[*x][*y];
 
-            let x_start = if x > 0 { x - 1 } else { x };
-            let x_end = if x < super::BOARD_SIZE - 1 { x + 1 } else { x };
-            let y_start = if y > 0 { y - 1 } else { y };
-            let y_end = if y < super::BOARD_SIZE - 1 { y + 1 } else { y };
+            let x_start = if *x > 0 { *x - 1 } else { *x };
+            let x_end = if *x < super::BOARD_SIZE - 1 { *x + 1 } else { *x };
+            let y_start = if *y > 0 { y - 1 } else { *y };
+            let y_end = if *y < super::BOARD_SIZE - 1 { *y + 1 } else { *y };
 
             // make a list of tuples with the coordinates of the neighbors
             let mut neighbors: Vec<(i32, i32)> = Vec::new();
@@ -31,7 +38,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                 for y_neighbor in y_start..=y_end {
 
                     // exclude the current cell
-                    if x_neighbor == x && y_neighbor == y {
+                    if x_neighbor == *x && y_neighbor == *y {
                         continue;
                     }
 
@@ -56,9 +63,9 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                 let neighbor_value_on_new_field = new_field[x_neighbor as usize][y_neighbor as usize];
 
                 if neighbor_value == 0 {
-                    let player = &mut players.get_mut(&cell_player_id).unwrap().borrow_mut();
+                    let player = &mut players.get(&cell_player_id).unwrap().borrow_mut();
 
-                    if player.resources > 0 && neighbor_value_on_new_field == 0 {
+                    if can_conquer_empty_cell(player) && neighbor_value_on_new_field == 0 {
                         player.spend_resources(super::RESOURCES_TO_CONQUER_EMPTY_CELL);
                         player.owned_cells = player.owned_cells + 1;
 
@@ -70,7 +77,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                     let mut enemy_player = &mut players.get(&neighbor_value).unwrap().borrow_mut();
 
                     if has_conquered_cell(&mut current_player, &mut enemy_player, &x_neighbor, &y_neighbor) {
-                        if can_conquer_cell(current_player) {
+                        if can_conquer_opponent_cell(current_player) {
                             current_player.spend_resources(super::RESOURCES_TO_CONQUER_FILLED_CELL);
 
                             current_player.owned_cells = current_player.owned_cells + 1;
@@ -90,8 +97,12 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
     new_field
 }
 
+fn can_conquer_empty_cell(player: &mut RefMut<Player>) -> bool {
+    player.resources > 0 && player.military > 0.0
+}
 
-fn can_conquer_cell(current_player: &mut RefMut<Player>) -> bool {
+
+fn can_conquer_opponent_cell(current_player: &mut RefMut<Player>) -> bool {
     current_player.resources > 0 && current_player.resources - super::RESOURCES_TO_CONQUER_FILLED_CELL > 0
 }
 
