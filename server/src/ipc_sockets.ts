@@ -48,6 +48,12 @@ async function startSendingSocket(): Promise<net.Socket> {
                 //     socket.write(`|1|(${military},${production},${research})\n`);
                 // }, 100)
             })
+            .on("close", function () {
+                console.log('Sending socket closed');
+                setTimeout(() => {
+                    resolve(startSendingSocket());
+                }, 5000)
+            })
             .on("error", function (err) {
                 console.log('Sending socket error: ' + err);
                 reject(err);
@@ -74,11 +80,11 @@ async function createCoreListeningSocket(): Promise<net.Socket> {
             //     console.log('Got data');
             // })
             socket.on('error', (err) => {
-                // console.log('Error: ' + err);
+                console.log('Error: ' + err);
                 reject(err);
             })
             socket.on('close', (hadErr) => {
-                // console.log('Closed: ' + hadErr);
+                console.log('Closed: ' + hadErr);
             })
         })
     } catch (err) {

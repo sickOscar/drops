@@ -2,7 +2,7 @@ pub enum Colors {
     Red,
     Blue,
     Yellow,
-    Green,
+    // Green,
 }
 
 #[derive(Debug)]
