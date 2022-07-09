@@ -4,7 +4,8 @@ use std::os::unix::net::{UnixListener, UnixStream};
 use std::io::prelude::*;
 use std::fs::*;
 use std::sync::mpsc::{Receiver, Sender, TryRecvError};
-use std::thread::JoinHandle;
+use std::thread::{JoinHandle, sleep};
+use std::time::Duration;
 
 pub fn start_ipc_receiver(tx: Sender<String>) -> JoinHandle<()> {
     return thread::spawn(move || loop {
@@ -17,13 +18,15 @@ pub fn start_ipc_receiver(tx: Sender<String>) -> JoinHandle<()> {
             Err(err) => {
                 println!("{}", "Connecting to node FAILED\n".yellow());
                 println!("{}", err.to_string().red());
-                return;
+                thread::sleep(Duration::from_secs(3));
+                continue;
             }
         };
 
         let mut connected = true;
 
         while connected {
+            sleep(Duration::from_millis(100));
             let mut buffer = [0; 1000];
             match stream.read(&mut buffer) {
                 Ok(size) => {
@@ -65,10 +68,12 @@ pub fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
         };
 
         match socket.accept() {
-            Ok((mut socket, _addr)) => {
+            Ok((mut socket, _add)) => {
+
                 println!("Got a listenting client");
 
                 loop {
+                    sleep(Duration::from_millis(100));
                     let received = match rx.try_recv() {
                         Ok(received) => received,
                         Err(e) => {
@@ -79,7 +84,7 @@ pub fn start_ipc_sender(rx: Receiver<String>) -> JoinHandle<()> {
                                     continue;
                                 }
                                 TryRecvError::Disconnected => {
-                                    println!("Disconnected from node");
+                                    // println!("Disconnected from node");
                                     return;
                                 }
                             }

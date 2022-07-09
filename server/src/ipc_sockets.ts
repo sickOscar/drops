@@ -1,9 +1,11 @@
 import fs from "fs";
 import net from "net";
 import * as util from "util";
+import * as dotenv from "dotenv";
+dotenv.config();
 
-const SOCKET_TO_NODE = "/tmp/drops_to_node.sock";
-const SOCKET_FROM_NODE = "/tmp/drops_from_node.sock";
+const SOCKET_TO_NODE = process.env.SOCKET_TO_NODE;
+const SOCKET_FROM_NODE = process.env.SOCKET_FROM_NODE;
 
 
 async function startSendingSocket(): Promise<net.Socket> {

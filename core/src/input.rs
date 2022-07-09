@@ -2,7 +2,6 @@ use std::cell::{RefCell};
 use std::collections::HashMap;
 use std::sync::mpsc::{Receiver, TryRecvError};
 
-
 use super::player::{add_players_to_field, create_player, Player};
 
 pub fn handle_game_input(from_node_rx: &Receiver<String>, players: &mut HashMap<i32, RefCell<Player>>) {
@@ -92,7 +91,7 @@ fn recieve_data_from_node(from_node_rx: &Receiver<String>) -> String {
                     String::from("")
                 }
                 TryRecvError::Disconnected => {
-                    println!("Disconnected from node");
+                    // println!("Disconnected from node");
                     String::from("")
                 }
             }

@@ -3,13 +3,13 @@ use std::collections::HashMap;
 use std::cell::{RefCell};
 use serde::{Serialize};
 
-use crate::utils::{Colors, Position};
 
+use crate::utils::{Colors, Position};
+use crate::milestones::{MILESTONES};
 
 #[derive(Serialize, Debug)]
 pub struct Player {
     pub id: i32,
-    // name: String,
     pub color: Colors,
     pub starting_position: Position,
     pub military: f32,
@@ -17,6 +17,8 @@ pub struct Player {
     pub research: f32,
     pub resources: i32,
     pub owned_cells: i32,
+    pub development:i32,
+    pub milestones_reached: i32,
 }
 
 impl Player {
@@ -27,8 +29,37 @@ impl Player {
         self.resources += amount;
     }
     pub fn update_resources(&mut self) {
-        let resource_gain = super::RESOURCES_AT_END_ROUND as f32 * self.production;
+
+        let milestone =  MILESTONES.get(self.milestones_reached as usize).unwrap();
+
+        let r = super::RESOURCES_AT_END_ROUND as f32;
+        let p = self.production;
+        let m = milestone.production_multiplier;
+        let resource_gain = r * p * m;
+
+
         self.gain_resources(resource_gain as i32);
+    }
+    pub fn update_development(&mut self) {
+        let development_gain = super::DEVELOPMENT_AT_END_ROUND as f32 * self.research;
+        self.development += development_gain as i32;
+
+        if self.development > super::MAX_DEVELOPMENT {
+            self.development = super::MAX_DEVELOPMENT;
+        }
+
+        if self.development == super::MAX_DEVELOPMENT {
+
+            self.milestones_reached += 1;
+            self.development = 0;
+
+            // cap milestones_reached at mat MILESTONES.len()
+            if self.milestones_reached >= MILESTONES.len() as i32 {
+                self.milestones_reached = MILESTONES.len() as i32 - 1;
+            }
+
+        }
+
     }
 }
 
@@ -39,10 +70,11 @@ pub fn add_players_to_field(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_
 }
 
 
-pub fn update_players_resources(players: &mut HashMap<i32, RefCell<Player>>) {
+pub fn update_players(players: &mut HashMap<i32, RefCell<Player>>) {
     for (_player_id, player) in players {
         let mut player_ref = player.borrow_mut();
         player_ref.update_resources();
+        player_ref.update_development();
     }
 }
 
@@ -79,6 +111,8 @@ pub fn create_player(id: i32) -> Player{
         research: 0.34,
         resources: 0,
         owned_cells: 0,
+        milestones_reached: 0,
+        development: 0,
     };
     player
 }

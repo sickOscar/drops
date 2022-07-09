@@ -7,9 +7,42 @@ use super::player::Player;
 use super::utils::Colors;
 
 pub fn render(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], players: &HashMap<i32, RefCell<Player>>, iterations: &i32) {
-    print!("\x1B[2J\x1B[1;1H");
-    println!("iteration {}", iterations);
+
+    clear_screen();
+
     println!("-----------------------------------------------------");
+
+    // draw_board(&field, players);
+
+    println!("-----------------------------------------------------");
+
+    draw_table(players, iterations);
+
+    println!("-----------------------------------------------------");
+}
+
+fn draw_table(players: &HashMap<i32, RefCell<Player>>, iterations: &i32) {
+    println!("Iteration: {}", iterations);
+    println!(
+        "{0: <10} | {1: <10} | {2: <10} | {3: <10} | {4: <10} | {5: <10} | {6: <10} | {7: <10}",
+        " ", "res", "cells", "military", "prod", "research", "dev", "milestone"
+    );
+    for (player_id, player) in players {
+        let p = player.borrow();
+
+        println!(
+            "{0: <10} | {1: <10} | {2: <10} | {3: <10} | {4: <10} | {5: <10} | {6: <10} | {7: <10}",
+            player_id, p.resources, p.owned_cells, p.military, p.production, p.research, p.development, p.milestones_reached
+        );
+
+    }
+}
+
+fn clear_screen() {
+    print!("\x1B[2J\x1B[1;1H");
+}
+
+fn draw_board(field: &&mut [[i32; 40]; 40], players: &HashMap<i32, RefCell<Player>>) {
     for x in 0..super::BOARD_SIZE {
         for y in 0..super::BOARD_SIZE {
             if field[x][y] == 0 {
@@ -30,12 +63,4 @@ pub fn render(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], players
         }
         print!("\n");
     }
-    println!("-----------------------------------------------------");
-    println!("Iteration: {}", iterations);
-    println!("name\tres\tcells\tmil\tprod\tresearch");
-    for (player_id, player) in players {
-        let p = player.borrow();
-        println!("Pl {}\t{}\t{}\t{}\t{}\t{}", player_id, p.resources, p.owned_cells, p.military, p.production, p.research);
-    }
-    print!("-----------------------------------------------------\n");
 }

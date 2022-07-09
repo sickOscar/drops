@@ -16,6 +16,8 @@ export class Player extends Schema {
     @type("string") sub: string;
     @type("int32") resources: number;
     @type("int32") score: number;
+    @type("int32") development: number;
+    @type("int32") milestones_reached: number;
 }
 
 export class GameState extends Schema {

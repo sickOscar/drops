@@ -1,0 +1,42 @@
+version: "3"
+
+volumes:
+  sockets:
+
+services:
+
+  core:
+    image: drops/core
+    restart: always
+    build:
+      context: core
+      dockerfile: Dockerfile
+    volumes:
+      - sockets:/tmp/sockets
+
+  server:
+    image: drops/server
+    build:
+      context: server
+      dockerfile: Dockerfile
+    volumes:
+      - sockets:/tmp/sockets
+    ports:
+      - "7000:7000"
+    environment:
+      - SOCKET_TO_NODE=/tmp/sockets/drops_to_node.sock
+      - SOCKET_FROM_NODE=/tmp/sockets/drops_from_node.sock
+
+  joypad:
+    image: nginx
+    volumes:
+      - ./server/static/joypad:/usr/share/nginx/html
+    ports:
+      - "8080:8080"
+
+  viewer:
+    image: nginx
+    volumes:
+      - ./server/static/viewer:/usr/share/nginx/html
+    ports:
+      - "8081:8081"

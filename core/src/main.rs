@@ -1,6 +1,7 @@
 use std::sync::mpsc::{channel};
 
-// CUSTOM MODULES DEFINITION
+// CUSTOM MODULES DEFINITION+
+mod consts;
 mod utils;
 mod player;
 mod board;
@@ -8,6 +9,7 @@ mod render;
 mod input;
 mod ipc;
 mod game;
+mod milestones;
 
 use ipc::{start_ipc_sender, start_ipc_receiver};
 use game::{game_loop};
@@ -19,19 +21,22 @@ pub const TIME_BETWEEN_ITERATIONS: u64 = 500;
 pub const STARTING_RESOURCES: i32 = (BOARD_SIZE * BOARD_SIZE) as i32;
 pub const RESOURCES_TO_CONQUER_EMPTY_CELL: i32 = 1;
 pub const RESOURCES_TO_CONQUER_FILLED_CELL: i32 = 10;
+pub const RESEARCH_RATE: i32 = 10;
 const RESOURCES_AT_END_ROUND:i32 = 10;
-const STARTING_POSITIONS:[(usize, usize); crate::MAX_PLAYERS as usize] = [
+const DEVELOPMENT_AT_END_ROUND:i32 = 10;
+const MAX_DEVELOPMENT:i32 = 100;
+const STARTING_POSITIONS:[(usize, usize); MAX_PLAYERS as usize] = [
     (1, 1),
-    (crate::BOARD_SIZE / 2, 1),
-    (crate::BOARD_SIZE - 2, 1),
-    (crate::BOARD_SIZE - 2, crate::BOARD_SIZE / 2),
-    (crate::BOARD_SIZE - 2, crate::BOARD_SIZE - 2),
-    (crate::BOARD_SIZE / 2, crate::BOARD_SIZE - 2),
-    (1, crate::BOARD_SIZE - 2),
-    (1, crate::BOARD_SIZE / 2),
+    (BOARD_SIZE / 2, 1),
+    (BOARD_SIZE - 2, 1),
+    (BOARD_SIZE - 2, BOARD_SIZE / 2),
+    (BOARD_SIZE - 2, BOARD_SIZE - 2),
+    (BOARD_SIZE / 2, BOARD_SIZE - 2),
+    (1, BOARD_SIZE - 2),
+    (1, BOARD_SIZE / 2),
 ];
-pub const SOCKET_TO_NODE: &str = "/tmp/drops_to_node.sock";
-pub const SOCKET_FROM_NODE: &str = "/tmp/drops_from_node.sock";
+pub const SOCKET_TO_NODE: &str = env!("SOCKET_TO_NODE");
+pub const SOCKET_FROM_NODE: &str = env!("SOCKET_FROM_NODE");
 
 
 fn main() {

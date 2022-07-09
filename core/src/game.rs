@@ -1,14 +1,14 @@
-use std::{thread, time};
+use std::time::Duration;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use colored::Colorize;
 use std::sync::mpsc::{Receiver, Sender};
-use crate::player::Player;
+use std::thread::sleep;
 
-use super::player::{create_players_hashmap, update_players_resources};
-use super::board::{update_board};
-use super::render::{render};
-use super::input::{handle_game_input, handle_initial_commands};
+use crate::player::{Player, create_players_hashmap, update_players};
+use crate::board::{update_board};
+use crate::render::{render};
+use crate::input::{handle_game_input, handle_initial_commands};
 
 pub fn game_loop(from_node_rx: Receiver<String>, to_node_tx: Sender<String>) {
 
@@ -27,9 +27,11 @@ pub fn game_loop(from_node_rx: Receiver<String>, to_node_tx: Sender<String>) {
 
         handle_initial_commands(&from_node_rx, &mut field, &mut players, &mut is_playing);
 
+        sleep(Duration::from_millis(100));
+
         while is_playing {
-            let sleep_time = time::Duration::from_millis(super::TIME_BETWEEN_ITERATIONS);
-            thread::sleep(sleep_time);
+
+            sleep(Duration::from_millis(super::TIME_BETWEEN_ITERATIONS));
 
             handle_game_input(&from_node_rx, &mut players);
 
@@ -51,7 +53,7 @@ pub fn game_loop(from_node_rx: Receiver<String>, to_node_tx: Sender<String>) {
             let new_field = update_board(&mut field, &mut players);
 
             // update resources of each player
-            update_players_resources(&mut players);
+            update_players(&mut players);
 
             // set field to new field
             field = new_field.clone();

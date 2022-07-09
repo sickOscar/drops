@@ -15,7 +15,7 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
     playingPlayers = new Set<string>();
 
 
-    public onCreate(options: Partial<{
+    public onCreate(_options: Partial<{
         maxClients: number,
         allowReconnectionTime: number,
         metadata: any,
@@ -31,9 +31,9 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
 
                 lastRemainingToken = restoreTruncatedMessage(incomingMessages, lastRemainingToken);
 
-                const validFieldStrings = incomingMessages
+                incomingMessages
                     .filter(message => message.length > 0)
-                    .map(message => {
+                    .forEach(message => {
 
                         if (message.startsWith("*endgame:")) {
                             this.state.gameRunning = false;

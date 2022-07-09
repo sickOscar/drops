@@ -1,0 +1,4 @@
+encryptionsalt: v1:genU1cqD3Y8=:v1:dKw3btKVu235N0Ru:5b2JBBL6eyXpImW2p9/7s3leGAd9Fg==
+config:
+  aws:profile: learning
+  aws:region: eu-west-1

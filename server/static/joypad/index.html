@@ -70,7 +70,10 @@
         </p>
     </div>
     <div>
-        <span id="resources-box"></span> | <span id="score-box"></span>
+        resources <span id="resources-box"></span>
+        | cells <span id="score-box"></span>
+        | dev <span id="development-box"></span>
+        | lev <span id="milestone-box"></span>
     </div>
 </div>
 
@@ -182,7 +185,18 @@
             });
         })
 
-        battleRoom = await client.join("battle")
+        if (localStorage.getItem("battle_room_id") === null) {
+            battleRoom = await client.join("battle")
+        } else {
+            const roomId = localStorage.getItem("battle_room_id")
+            const sessionId = localStorage.getItem("battle_session_id")
+            battleRoom = await client.reconnect(roomId, sessionId)
+        }
+
+
+        localStorage.setItem(`battle_session`, battleRoom.sessionId);
+        localStorage.setItem(`battle_room_id`, battleRoom.roomId);
+
         battleRoom.send("identity", `${user.sub}:${user.name}`)
 
         document.getElementById("waiting-box").style.display = "block";
@@ -212,8 +226,10 @@
                 });
 
                 if (me) {
-                    document.getElementById("resources-box").innerHTML = `resources ${me.resources}`;
-                    document.getElementById("score-box").innerHTML = `score ${me.score}`;
+                    document.getElementById("resources-box").innerHTML = `${me.resources}`;
+                    document.getElementById("score-box").innerHTML = `${me.score}`;
+                    document.getElementById("development-box").innerHTML = `${me.development}`;
+                    document.getElementById("milestone-box").innerHTML = `${me.milestone_reached}`;
                 }
 
             })

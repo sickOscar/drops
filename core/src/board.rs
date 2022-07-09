@@ -4,6 +4,7 @@ use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
 use super::player::{Player};
+use super::milestones::{MILESTONES};
 
 pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], players: &mut HashMap<i32, RefCell<Player>> ) -> [[i32; super::BOARD_SIZE]; super::BOARD_SIZE] {
 
@@ -24,7 +25,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                 continue;
             }
 
-            let mut has_conquered = false;
+            let mut has_conquered = 0.0;
             let cell_player_id = field[*x][*y];
 
             let x_start = if *x > 0 { *x - 1 } else { *x };
@@ -55,7 +56,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
             neighbors.shuffle(&mut thread_rng());
 
             for (x_neighbor, y_neighbor) in neighbors {
-                if has_conquered {
+                if has_conquered >= 1.0 {
                     continue;
                 }
 
@@ -70,7 +71,8 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                         player.owned_cells = player.owned_cells + 1;
 
                         new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
-                        has_conquered = true;
+
+                        has_conquered += 1.0;
                     }
                 } else {
                     let mut current_player = &mut players.get(&cell_player_id).unwrap().borrow_mut();
@@ -84,7 +86,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                             enemy_player.owned_cells = enemy_player.owned_cells - 1;
 
                             new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
-                            has_conquered = true;
+                            has_conquered += 1.0;
                         }
                     } else {
                         new_field[x_neighbor as usize][y_neighbor as usize] = neighbor_value;
@@ -111,5 +113,12 @@ fn has_conquered_cell(current_player: &mut RefMut<Player>, enemy_player: &mut Re
     if i == &enemy_player.starting_position.x && j == &enemy_player.starting_position.y {
         return false;
     }
-    current_player.military > enemy_player.military
+
+    let current_player_milestone = MILESTONES.get(current_player.milestones_reached as usize).unwrap();
+    let enemy_player_multiplier = MILESTONES.get(enemy_player.milestones_reached as usize).unwrap();
+
+    let current_player_bonus = current_player_milestone.military_multiplier;
+    let enemy_player_bonus = enemy_player_multiplier.military_multiplier;
+
+    (current_player.military * current_player_bonus) > (enemy_player.military * enemy_player_bonus)
 }
