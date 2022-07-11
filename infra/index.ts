@@ -126,6 +126,13 @@ const targetGroup = new aws.lb.TargetGroup("drops-target", {
     port: 80,
     protocol: "HTTPS",
     vpcId: vpc.id,
+    healthCheck: {
+        healthyThreshold: 2,
+        unhealthyThreshold: 2,
+        timeout: 3,
+        path: "/elb-status",
+        interval: 30,
+    },
 });
 
 const targetGroupAttachment = new aws.lb.TargetGroupAttachment("drops-target-association", {
