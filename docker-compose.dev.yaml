@@ -4,36 +4,41 @@ volumes:
   sockets:
 
 networks:
-  drops:
+  drops-dev:
 
 services:
 
   core:
     image: drops/core
-    restart: always
+    restart: on-failure
     build:
       context: core
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     volumes:
       - sockets:/tmp/sockets
-    depends_on:
-      - server
+      - ./core:/app
+    environment:
+      - SOCKET_TO_NODE=/tmp/sockets/drops_to_node.sock
+      - SOCKET_FROM_NODE=/tmp/sockets/drops_from_node.sock
 
   server:
     image: drops/server
     container_name: server
+    restart: always
     build:
       context: server
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     volumes:
       - sockets:/tmp/sockets
+      - ./server:/usr/local/app
     ports:
       - "7000:7000"
     environment:
       - SOCKET_TO_NODE=/tmp/sockets/drops_to_node.sock
       - SOCKET_FROM_NODE=/tmp/sockets/drops_from_node.sock
     networks:
-      - drops
+      - drops-dev
+    command: ["sh", "-c", "chmod -R 777 /tmp/sockets/ && echo asda && npm run dev"]
 
   http:
     image: nginx
@@ -43,4 +48,6 @@ services:
       - ./conf/nginx:/etc/nginx/conf.d
       - ./server/static/:/usr/share/nginx/html
     networks:
-      - drops
+      - drops-dev
+    logging:
+      driver: none

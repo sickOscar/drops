@@ -6,7 +6,7 @@ use colored::Colorize;
 use super::player::Player;
 use super::utils::Colors;
 
-pub fn render(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], players: &HashMap<i32, RefCell<Player>>, iterations: &i32) {
+pub fn render(_field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], players: &HashMap<i32, RefCell<Player>>, iterations: &i32) {
 
     clear_screen();
 
@@ -42,7 +42,7 @@ fn clear_screen() {
     print!("\x1B[2J\x1B[1;1H");
 }
 
-fn draw_board(field: &&mut [[i32; 40]; 40], players: &HashMap<i32, RefCell<Player>>) {
+fn _draw_board(field: &&mut [[i32; 40]; 40], players: &HashMap<i32, RefCell<Player>>) {
     for x in 0..super::BOARD_SIZE {
         for y in 0..super::BOARD_SIZE {
             if field[x][y] == 0 {

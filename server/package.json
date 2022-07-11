@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node index.ts",
+    "dev": "ts-node-dev index.ts",
     "joy": "npx serve -s ./static/joypad -p 8000",
     "viewer": "npx serve -s ./static/viewer -p 8001"
   },
@@ -20,6 +21,7 @@
     "typescript": "^4.7.4"
   },
   "devDependencies": {
-    "@types/node-ipc": "^9.2.0"
+    "@types/node-ipc": "^9.2.0",
+    "ts-node-dev": "^2.0.0"
   }
 }

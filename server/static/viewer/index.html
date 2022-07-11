@@ -1,4 +1,4 @@
-<script src="https://unpkg.com/colyseus.js@^0.14.0/dist/colyseus.js"></script>
+<script src="colyseus.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/p5.min.js"></script>
 <style>
     * {
@@ -6,59 +6,4 @@
         padding: 0;
     }
 </style>
-<script>
-    var client = new Colyseus.Client('ws://localhost:7000');
-
-    let field = []
-
-    client.joinOrCreate("battle")
-        .then(room => {
-            console.log(room.sessionId, "joined", room.name);
-            room.onStateChange(state => {
-                field = []
-                state.field.cols.forEach((col) => {
-                    const column = [];
-                    col.col.forEach((cell) => {
-                        column.push(cell);
-                    });
-                    field.push(column);
-                });
-            })
-
-        })
-        .catch(e => {
-            console.log("JOIN ERROR", e);
-        });
-
-    const colors = [
-        '#000000',
-        '#FF0000',
-        '#00FF00',
-        '#0000FF',
-        '#FFFF00',
-        '#FF00FF',
-        '#00FFFF',
-        '#FFFFFF',
-    ];
-
-    function setup() {
-        createCanvas(windowWidth, windowHeight);
-        background(0);
-    }
-
-    function draw() {
-
-        const CELL_SIZE = 10;
-
-        background(0);
-        field.forEach((column, x) => {
-            column.forEach((cell, y) => {
-                fill(colors[cell]);
-                noStroke();
-                rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-            });
-        });
-    }
-
-
-</script>
+<h1>VIEWER</h1>

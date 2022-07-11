@@ -1,0 +1,11 @@
+FROM node:alpine
+
+WORKDIR /usr/local/app
+
+COPY package.json /package.json
+
+RUN npm i
+
+# RUN chmod -R 777 /tmp/
+
+# CMD ["npm", "run", "dev"]

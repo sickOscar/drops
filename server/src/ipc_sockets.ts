@@ -27,10 +27,13 @@ async function startSendingSocket(): Promise<net.Socket> {
         }
 
     } catch (err) {
+        console.log(err);
         console.log('No leftover socket found.');
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+
+
         const server = net.createServer(function (socket) {
             console.log('Connection acknowledged.');
         });
@@ -82,11 +85,11 @@ async function createCoreListeningSocket(): Promise<net.Socket> {
             //     console.log('Got data');
             // })
             socket.on('error', (err) => {
-                // console.log('Error: ' + err);
+                console.log('Error: ' + err);
                 reject(err);
             })
             socket.on('close', (hadErr) => {
-                // console.log('Closed: ' + hadErr);
+                console.log('Closed: ' + hadErr);
             })
         })
     } catch (err) {

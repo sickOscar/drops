@@ -1,0 +1,16 @@
+FROM rust:alpine
+
+RUN apk update && apk add --no-cache musl-dev bash
+
+VOLUME /tmp/sockets
+VOLUME /app
+
+ENV SOCKET_TO_NODE=/tmp/sockets/drops_to_node.sock
+ENV SOCKET_FROM_NODE=/tmp/sockets/drops_from_node.sock
+
+WORKDIR /app
+
+RUN cargo install cargo-watch
+
+CMD ["./wait-for-it.sh", "localhost:7000", "--", "cargo", "watch", "-x", "run"]
+
