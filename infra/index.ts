@@ -124,7 +124,7 @@ const alb = new aws.lb.LoadBalancer("drops-alb", {
 
 const targetGroup = new aws.lb.TargetGroup("drops-target", {
     port: 80,
-    protocol: "HTTPS",
+    protocol: "HTTP",
     vpcId: vpc.id,
     healthCheck: {
         healthyThreshold: 2,
@@ -141,12 +141,24 @@ const targetGroupAttachment = new aws.lb.TargetGroupAttachment("drops-target-ass
     port: 80,
 });
 
-const secureListener = new aws.lb.Listener("drops-elb-listener", {
+// const secureListener = new aws.lb.Listener("https-listener", {
+//     loadBalancerArn: alb.id,
+//     protocol: "HTTPS",
+//     port: 433,
+//     sslPolicy: "ELBSecurityPolicy-2016-08",
+//     certificateArn: cert.arn,
+//     defaultActions: [
+//         {
+//             type: "forward",
+//             targetGroupArn: targetGroup.arn,
+//         }
+//     ]
+// })
+
+const httpListener = new aws.lb.Listener("http-listener", {
     loadBalancerArn: alb.id,
-    protocol: "HTTPS",
-    port: 433,
-    sslPolicy: "ELBSecurityPolicy-2016-08",
-    certificateArn: cert.arn,
+    protocol: "HTTP",
+    port: 80,
     defaultActions: [
         {
             type: "forward",
@@ -156,10 +168,28 @@ const secureListener = new aws.lb.Listener("drops-elb-listener", {
 })
 
 
+const primary = new aws.route53.Zone("drs", {
+    name: "robosnipers.com"
+});
 
+const baseRecord = new aws.route53.Record("base-record", {
+    zoneId: primary.id,
+    name: "robosnipers.com",
+    type: "A",
+    aliases: [{
+        name: alb.dnsName,
+        zoneId: alb.zoneId,
+        evaluateTargetHealth: true,
+    }],
+})
 
-
-
+const wwwRecord = new aws.route53.Record("www-record", {
+    zoneId: primary.id,
+    name: "www",
+    type: "CNAME",
+    ttl: 5,
+    records: [baseRecord.name],
+})
 
 
 export const publicDns = alb.dnsName;
