@@ -55,6 +55,12 @@ const securityGroup = new aws.ec2.SecurityGroup("drops-sg", {
             toPort: 80,
             cidrBlocks: ["0.0.0.0/0"],
         },
+        {
+            fromPort: 8080,
+            protocol: "tcp",
+            toPort: 8081,
+            cidrBlocks: ["0.0.0.0/0"],
+        },
     ],
     egress: [
         {
@@ -82,5 +88,8 @@ const web = new aws.ec2.Instance("drops-server", {
     // userData: fs.readFileSync("server-init.sh", "utf8"),
 });
 
+const elasticIp = new aws.ec2.Eip("elasticIp", {
+    instance: web.id,
+});
 
-export const publicIp = web.publicIp;
+export const publicIp = elasticIp.publicIp;

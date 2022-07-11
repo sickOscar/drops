@@ -27,16 +27,19 @@ services:
       - SOCKET_TO_NODE=/tmp/sockets/drops_to_node.sock
       - SOCKET_FROM_NODE=/tmp/sockets/drops_from_node.sock
 
-  joypad:
+  http:
     image: nginx
-    volumes:
-      - ./server/static/joypad:/usr/share/nginx/html
     ports:
-      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./conf/nginx:/etc/nginx/conf.d
+      - ./server/static/:/usr/share/nginx/html
+      - ./conf/certbot/conf:/etc/letsencrypt
+      - ./conf/certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
-  viewer:
-    image: nginx
-    volumes:
-      - ./server/static/viewer:/usr/share/nginx/html
-    ports:
-      - "8081:8081"
+  certbot:
+    image: certbot/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
