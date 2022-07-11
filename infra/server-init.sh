@@ -12,5 +12,5 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose version
 
 git clone https://github.com/sickDevelopers/drops.git
-./drops/conf/init-letsencrypt.sh
+sudo reboot
 

@@ -14,6 +14,15 @@ const publicSubnet = new aws.ec2.Subnet("publicSubnet", {
     }
 })
 
+const publicSubnet2 = new aws.ec2.Subnet("publicSubnet2", {
+    vpcId: vpc.id,
+    cidrBlock: "11.0.2.0/24",
+    availabilityZone: "eu-west-1b",
+    tags: {
+        Name: "drops",
+    }
+})
+
 const gateway = new aws.ec2.InternetGateway("gateway", {
     vpcId: vpc.id,
     tags: {
@@ -56,6 +65,12 @@ const securityGroup = new aws.ec2.SecurityGroup("drops-sg", {
             cidrBlocks: ["0.0.0.0/0"],
         },
         {
+            fromPort: 433,
+            protocol: "tcp",
+            toPort: 433,
+            cidrBlocks: ["0.0.0.0/0"],
+        },
+        {
             fromPort: 8080,
             protocol: "tcp",
             toPort: 8081,
@@ -85,11 +100,59 @@ const web = new aws.ec2.Instance("drops-server", {
         Name: "drops",
     },
     keyName: "citd",
-    // userData: fs.readFileSync("server-init.sh", "utf8"),
+    userData: fs.readFileSync("server-init.sh", "utf8"),
 });
 
-const elasticIp = new aws.ec2.Eip("elasticIp", {
-    instance: web.id,
+const cert = new aws.acm.Certificate("cert", {
+    domainName: "robosnipers.com",
+    tags: {
+        Name: "drops",
+    },
+    validationMethod: "DNS",
 });
 
-export const publicIp = elasticIp.publicIp;
+const alb = new aws.lb.LoadBalancer("drops-alb", {
+    internal: false,
+    loadBalancerType: "application",
+    securityGroups: [securityGroup.id],
+    subnets: [publicSubnet.id, publicSubnet2.id],
+    enableDeletionProtection: false,
+    tags: {
+        Name: "drops",
+    },
+});
+
+const targetGroup = new aws.lb.TargetGroup("drops-target", {
+    port: 80,
+    protocol: "HTTPS",
+    vpcId: vpc.id,
+});
+
+const targetGroupAttachment = new aws.lb.TargetGroupAttachment("drops-target-association", {
+    targetGroupArn: targetGroup.arn,
+    targetId: web.id,
+    port: 80,
+});
+
+const secureListener = new aws.lb.Listener("drops-elb-listener", {
+    loadBalancerArn: alb.id,
+    protocol: "HTTPS",
+    port: 433,
+    sslPolicy: "ELBSecurityPolicy-2016-08",
+    certificateArn: cert.arn,
+    defaultActions: [
+        {
+            type: "forward",
+            targetGroupArn: targetGroup.arn,
+        }
+    ]
+})
+
+
+
+
+
+
+
+
+export const publicDns = alb.dnsName;
