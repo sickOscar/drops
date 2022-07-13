@@ -65,9 +65,9 @@ const securityGroup = new aws.ec2.SecurityGroup("drops-sg", {
             cidrBlocks: ["0.0.0.0/0"],
         },
         {
-            fromPort: 433,
+            fromPort: 443,
             protocol: "tcp",
-            toPort: 433,
+            toPort: 443,
             cidrBlocks: ["0.0.0.0/0"],
         },
         {
@@ -83,7 +83,8 @@ const securityGroup = new aws.ec2.SecurityGroup("drops-sg", {
             protocol: "-1",
             toPort: 0,
             cidrBlocks: ["0.0.0.0/0"],
-        }
+        },
+
     ],
     tags: {
         Name: "drops",
@@ -141,24 +142,12 @@ const targetGroupAttachment = new aws.lb.TargetGroupAttachment("drops-target-ass
     port: 80,
 });
 
-// const secureListener = new aws.lb.Listener("https-listener", {
-//     loadBalancerArn: alb.id,
-//     protocol: "HTTPS",
-//     port: 433,
-//     sslPolicy: "ELBSecurityPolicy-2016-08",
-//     certificateArn: cert.arn,
-//     defaultActions: [
-//         {
-//             type: "forward",
-//             targetGroupArn: targetGroup.arn,
-//         }
-//     ]
-// })
-
-const httpListener = new aws.lb.Listener("http-listener", {
+const secureListener = new aws.lb.Listener("https-listener", {
     loadBalancerArn: alb.id,
-    protocol: "HTTP",
-    port: 80,
+    protocol: "HTTPS",
+    port: 443,
+    sslPolicy: "ELBSecurityPolicy-2016-08",
+    certificateArn: cert.arn,
     defaultActions: [
         {
             type: "forward",
@@ -166,6 +155,18 @@ const httpListener = new aws.lb.Listener("http-listener", {
         }
     ]
 })
+
+// const httpListener = new aws.lb.Listener("http-listener", {
+//     loadBalancerArn: alb.id,
+//     protocol: "HTTP",
+//     port: 433,
+//     defaultActions: [
+//         {
+//             type: "forward",
+//             targetGroupArn: targetGroup.arn,
+//         }
+//     ]
+// })
 
 
 const primary = new aws.route53.Zone("drs", {
@@ -193,3 +194,4 @@ const wwwRecord = new aws.route53.Record("www-record", {
 
 
 export const publicDns = alb.dnsName;
+export const instanceIp = web.publicIp;
