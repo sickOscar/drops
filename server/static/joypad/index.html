@@ -4,7 +4,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Drops - joypade</title>
+    <title>Drops - joypad</title>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
           integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
     <link rel="stylesheet" href="../css/bootstrap4-neon-glow.min.css">
@@ -15,14 +15,37 @@
     <link rel='stylesheet' href='//cdn.jsdelivr.net/font-hack/2.020/css/hack.min.css'>
 
     <style>
+
+        /*@media only screen and (orientation:landscape){*/
+        /*    body {*/
+        /*        height: 100vw;*/
+        /*        transform: rotate(90deg);*/
+        /*    }*/
+        /*}*/
+
         .view {
             display: none;
         }
+
         .show {
             display: block;
         }
-        .hidden {
-            display: none;
+
+        .disconnected {
+            color: gray;
+        }
+
+        .slider-box {
+            padding: 0 10px;
+        }
+
+        .slider-box label {
+            display: block;
+            margin-bottom: 0;
+        }
+
+        .slider-box input {
+            width: 100%;
         }
     </style>
 </head>
@@ -37,13 +60,29 @@
     <div id="auth" class="view">
         <button onclick="Auth.logout()">Logout</button>
 
-        <div id="waiting-box" class="view">WAITING FOR OTHER PLAYERS...</div>
+        <div id="intro" class="view">
+
+            <p>
+                Everybody wants to play drops!
+                <button id="enqueue-button">Get in line!</button>
+
+            </p>
+
+        </div>
+
+        <div id="waiting-box" class="view">
+            WAITING FOR OTHER PLAYERS...
+        </div>
+
+        <div id="relay" class="view">
+            <ol id="relay-queue-box"></ol>
+        </div>
 
         <div id="joypad" class="view">
             <div>
                 <p class="slider-box">
                     <label for="military">Military</label>
-                    <!--        <button class="lock" data-locks="military">lock</button>-->
+                    <button class="lock" data-locks="military">lock</button>
                     <input type="range" value="33" class="range-input" id="military" min="0" max="100" step="1">
                     <span id="military-value" class="range-input-value"></span>
                 </p>
@@ -51,7 +90,7 @@
             <div>
                 <p class="slider-box">
                     <label for="production">Production</label>
-                    <!--        <button class="lock" data-locks="production">lock</button>-->
+                    <button class="lock" data-locks="production">lock</button>
                     <input type="range" value="34" class="range-input" id="production" min="0" max="100" step="1">
                     <span id="production-value" class="range-input-value"></span>
                 </p>
@@ -59,7 +98,7 @@
             <div>
                 <p class="slider-box">
                     <label for="research">Research</label>
-                    <!--        <button class="lock" data-locks="research">lock</button>-->
+                    <button class="lock" data-locks="research">lock</button>
                     <input type="range" value="33" class="range-input" id="research" min="0" max="100" step="1">
                     <span id="research-value" class="range-input-value"></span>
                 </p>
@@ -72,13 +111,25 @@
             </div>
         </div>
     </div>
+
+    <div id="end-screen" class="view">
+        <p>Thank you for playing!</p>
+        <a href="/joypad">Play again</a>
+    </div>
+
+
 </div>
 
 
 <script>
 
-    const AUTH_REDIRECT_URI =  window.location.href.slice(0, -1);
-    const HOSTNAME = window.location.hostname;
+    const url = new URL(window.location.href);
+
+    const HOSTNAME = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
+    const AUTH_REDIRECT_URI = `${HOSTNAME}${url.pathname}`;
+
+    // const MULTIPLAYER_HOST = `ws://localhost:7000`
+    const MULTIPLAYER_HOST = `ws://${HOSTNAME}/server`
 
     window.onload = async () => {
         await Auth.configureClient()
@@ -94,7 +145,6 @@
         }
 
     }
-
 
 
     const Auth = {
@@ -141,6 +191,8 @@
         // main divs
         unauthDiv: document.getElementById("unauth"),
         authDiv: document.getElementById("auth"),
+        // intro
+        introDiv: document.getElementById("intro"),
         // score boxes
         scoreBox: document.getElementById("score-box"),
         resourcesBox: document.getElementById("resources-box"),
@@ -152,16 +204,34 @@
         inputs: Array.from(document.getElementsByClassName('range-input')),
         // joypad
         joypad: document.getElementById("joypad"),
+        // locks
+        lockButtons: Array.from(document.getElementsByClassName('lock')),
+        // relay queue
+        relayQueue: document.getElementById("relay"),
+        endScreen: document.getElementById("end-screen"),
+        enqueueButton: document.getElementById("enqueue-button"),
 
         // methods
         showUnauth: () => {
-            UI.unauthDiv.classList.add("show");
-            UI.authDiv.classList.remove("show");
+            UI.hideComponent(UI.authDiv)
+            UI.showComponent(UI.unauthDiv);
         },
         showAuth: () => {
-            UI.unauthDiv.classList.remove("show");
-            UI.authDiv.classList.add("show");
-            Game.init();
+            UI.hideComponent(UI.unauthDiv)
+            UI.showComponent(UI.authDiv);
+            UI.showComponent(UI.introDiv);
+
+            UI.enqueueButton.addEventListener("click", e => {
+                e.preventDefault();
+                UI.hideComponent(UI.introDiv);
+                Game.init();
+            });
+
+        },
+        showEnding: () => {
+            UI.hideComponent(UI.authDiv)
+            UI.hideComponent(UI.unauthDiv);
+            UI.showComponent(UI.endScreen);
         },
         showComponent: (component) => {
             component.classList.add("show");
@@ -169,11 +239,37 @@
         hideComponent: (component) => {
             component.classList.remove("show");
         },
+        updateRelayQueue: () => {
+            const queue = Game.relayQueue;
+            console.log(`queue`, queue)
+            UI.relayQueue.innerHTML = '';
+            for (let i = 0; i < queue.length; i++) {
+                const item = queue[i];
+                const name = item.split('|')[0];
+                const connected = item.split('|')[1] === "true";
+                const li = document.createElement('li');
+                if (!connected) {
+                    li.classList.add('disconnected')
+                }
+                li.innerText = name;
+                UI.relayQueue.appendChild(li);
+            }
+        },
+
     }
 
     const Game = {
         battleRoom: null,
         relayRoom: null,
+        relayQueue: [],
+        init: async () => {
+            const client = new Colyseus.Client(MULTIPLAYER_HOST);
+            const user = await Auth.getUser()
+
+            UI.showComponent(UI.relayQueue);
+
+            await Game.startGameLoop(client, user);
+        },
         startGameLoop: async function (client, user) {
 
             console.log('Joining relay room...');
@@ -184,23 +280,19 @@
 
             console.log('Joining battle room...');
             await Game.joinBattleRoom(client, user);
-            
+
             console.log('Waiting for start battle message...');
             await Game.waitForBattleStart();
-            
+
             console.log("Battle started");
 
             UI.showComponent(UI.joypad);
             UI.hideComponent(UI.waitingBox);
+            UI.hideComponent(UI.relayQueue);
 
             Joypad.handleInput();
 
             Game.handleStateChange(user, client);
-        },
-        init: async () => {
-            const client = new Colyseus.Client(`ws://${HOSTNAME}/server`);
-            const user = await Auth.getUser()
-            await Game.startGameLoop(client, user);
         },
         joinRelayRoom: async function (client, user) {
             Game.relayRoom = await client.join("relay")
@@ -209,6 +301,12 @@
         },
         waitForBattleReady: async function () {
             await new Promise((resolve) => {
+
+                Game.relayRoom.onMessage("queue", (queue) => {
+                    Game.relayQueue = queue;
+                    UI.updateRelayQueue();
+                })
+
                 Game.relayRoom.onMessage("battle_ready", () => {
                     console.log("Battle ready");
                     Game.relayRoom.leave();
@@ -216,7 +314,7 @@
                 });
             })
         },
-        waitForBattleStart: async function() {
+        waitForBattleStart: async function () {
             await new Promise((resolve) => {
                 Game.battleRoom.onMessage("battle_start", () => {
                     resolve();
@@ -251,6 +349,8 @@
         handleStateChange: function (user, client) {
             Game.battleRoom.onStateChange(state => {
 
+                console.log(`state`, state)
+
                 field = []
                 state.field.cols.forEach((col) => {
                     const column = [];
@@ -262,19 +362,19 @@
 
                 let me = [];
                 state.players.forEach((player) => {
-                    console.log(`player`, player)
                     if (player.sub === user.sub) {
                         me = player;
                     }
                 });
 
-                console.log(`me`, me)
-
                 if (me) {
-                    UI.resourcesBox.innerText = `${me.resources}`;
-                    UI.scoreBox.innerHTML = `${me.score}`;
-                    UI.developmentBox.innerHTML = `${me.development}`;
-                    UI.milestoneBox.innerHTML = `${me.milestone_reached}`;
+
+                    console.log(`me`, me)
+
+                    UI.resourcesBox.innerText = `${me.resources || 0}`;
+                    UI.scoreBox.innerHTML = `${me.score || 0}`;
+                    UI.developmentBox.innerHTML = `${me.development || 0}`;
+                    UI.milestoneBox.innerHTML = `${me.milestones_reached || 0}`;
                 }
 
             })
@@ -286,7 +386,9 @@
 
                 UI.hideComponent(UI.joypad);
 
-                Game.startGameLoop();
+                // Game.startGameLoop(client, user);
+
+                UI.showEnding();
 
             });
         },
@@ -296,41 +398,42 @@
 
 
         handleInput: () => {
-            const maxTotal = 100; // define the max sum of values
-            const getTotal = function () { // helper function to calculate the sum
+
+            const maxTotal = 100;
+
+            const getTotal = function () {
                 var sum = 0;
                 UI.inputs.forEach(function (input) {
                     sum += parseInt(input.value, 10);
                 });
                 return sum;
             };
-            const maxReached = function (e) {  // check if the max is reached
-                var sum = getTotal(), target;
-                if (sum > maxTotal) {
-                    target = e.target;
-                    // set the max possible value if the user, for example, clicks too far to the right
-                    target.value = target.value - (sum - maxTotal);
-                    // next line is just for demonstrational purposes
-                    // document.getElementById('total').innerHTML = getTotal();
 
-                    // prevent increasing the value
-                    e.preventDefault();
-                    return false;
-                }
-                // next line is just for demonstrational purposes
-                // document.getElementById('total').innerHTML = getTotal();
-
-                // everything's fine, nothing to do.
-                return true;
-            };
-
-            // attach the maxReached function to your inputs
             UI.inputs.forEach(function (input) {
-                input.addEventListener('input', maxReached);
+                input.addEventListener('input', function (e) {
+
+                    const value = parseInt(input.value, 10);
+                    const sum = getTotal();
+                    const blocked = UI.inputs.filter(i => i.getAttribute('disabled')).length
+
+                    if (sum > maxTotal || sum < maxTotal) {
+                        UI.inputs.forEach(otherInput => {
+                            if (input.id === otherInput.id) return;
+                            if (otherInput.getAttribute('disabled')) return;
+                            otherInput.value = otherInput.value - ((sum - maxTotal) / (2 - blocked))
+                        })
+                        input.value = value - (sum - maxTotal);
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    return true;
+                });
             });
 
             UI.inputs.forEach(function (input) {
                 input.addEventListener('change', e => {
+
                     const toSend = [];
 
                     UI.inputs.forEach(function (input) {
@@ -353,6 +456,21 @@
 
                 });
             });
+
+            UI.lockButtons.forEach(button => {
+                button.addEventListener('click', event => {
+                    const forInput = button.getAttribute('data-locks');
+
+                    const input = document.getElementById(forInput)
+                    console.log(input.getAttribute('disabled'))
+                    if (input.getAttribute('disabled') === null) {
+                        input.setAttribute('disabled', "true");
+                    } else {
+                        input.removeAttribute('disabled')
+                    }
+
+                })
+            })
         }
     }
 

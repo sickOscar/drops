@@ -18,6 +18,8 @@ services:
       - sockets:/tmp/sockets
     depends_on:
       - server
+    networks:
+      - drops
 
   server:
     image: drops/server

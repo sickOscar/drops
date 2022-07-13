@@ -3,10 +3,10 @@ import {RoomListingData} from "colyseus";
 export function enhanced_logging(relay: RoomListingData<any>, battle: RoomListingData<any>) {
     let ui = {
         relay: {
-            connected: relay.clients
+            clients: relay.clients
         },
         battle: {
-            connected: battle.clients
+            clients: battle.clients
         }
     }
 
@@ -14,10 +14,10 @@ export function enhanced_logging(relay: RoomListingData<any>, battle: RoomListin
 
         const newUi = {
             relay: {
-                connected: relay.clients
+                clients: relay.clients
             },
             battle: {
-                connected: battle.clients
+                clients: battle.clients,
             }
         }
 

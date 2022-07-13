@@ -36,7 +36,7 @@ pub fn start_ipc_receiver(tx: Sender<String>) -> JoinHandle<()> {
                     }
                 }
                 Err(err) => {
-                    println!("{}", err);
+                    println!("Error start_ipc_receiver: {}", err);
                     connected = false;
                 }
             }

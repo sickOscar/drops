@@ -46,12 +46,16 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
 
             const [sub, name] = data.split(":");
 
+            console.log(`RELAY: got player identity`, sub, name)
+
             let player = this.createPlayerOnJoin(client, sub, name);
 
             if (this.playerAlreadyExists(sub)) {
                 player = this.handlePlayerReconnection(player, client);
                 if (this.playerShouldEnterBattleOnConnect(player)) {
                     this.sendPlayerToBattle(client);
+                } else {
+                    this.putPlayerInWaitingList(player);
                 }
             } else {
                 this.handleNewPlayerJoining(player);
@@ -60,14 +64,21 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
 
             }
 
+            this.broadcatsQueue();
+
             if (this.shouldStartNewGame()) {
                 this.startNewGame();
             }
         })
 
-        // this.onMessage('*', (client: Client, type: string, message: any) => {
-        //     this.broadcast(type, [client.sessionId, message], { except: client });
-        // });
+        this.presence.subscribe('battle_state', (state) => {
+            if (state === 'endgame') {
+                this.state.gameRunning = false;
+                this.playingPlayers.clear();
+            }
+        })
+
+
     }
 
     public onAuth(client: Client, options: any, request: http.IncomingMessage) {
@@ -79,7 +90,7 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
 
     public async onLeave(client: Client, consented: boolean) {
 
-        let p:Player;
+        let p: Player;
         this.state.players.forEach((player, key) => {
             if (player.sessionId === client.sessionId) {
                 p = player;
@@ -87,23 +98,58 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
         });
 
         if (p) {
+            p.connected = false;
+            this.state.players.set(p.sub, p);
+
+            const leavingWaitingPlayer = this.waitingPlayers.find(waitinggPlayer => waitinggPlayer.sub === p.sub);
+            if (leavingWaitingPlayer) {
+                leavingWaitingPlayer.connected = false;
+            }
+
+            this.broadcatsQueue();
             console.log(`${p.name} left relay`);
-            this.broadcast('player_left', p.name);
         }
 
     }
 
 
+    private broadcatsQueue() {
+        this.broadcast('queue', this.waitingPlayers.toArray()
+            .map(p => `${p.name}|${p.connected}`)
+        );
+    }
+
     private startNewGame() {
         this.state.gameRunning = true;
 
-        for (let i = 0; i < PLAYERS_NUM; i++) {
-            const player = this.waitingPlayers.dequeue();
-            this.playingPlayers.add(player.sub);
+        const waiting = this.waitingPlayers.toArray();
+        console.log(`players`, waiting.map(p => p.name));
 
-            this.clients.find(client => client.sessionId === player.sessionId)
-                .send("battle_ready");
+        const newWaitingPlayersQueue = new Queue<Player>();
+        let addedPlayers = 0;
+
+        for (let i = 0; i < PLAYERS_NUM; i++) {
+            
+            const player = waiting[i];
+
+            if (player.connected) {
+                this.playingPlayers.add(player.sub);
+
+                const involvedClient = this.clients.find(client => client.sessionId === player.sessionId)
+                involvedClient.send("battle_ready");
+
+                addedPlayers++;
+                if (addedPlayers === PLAYERS_NUM) {
+                    break;
+                }
+            } else {
+                newWaitingPlayersQueue.enqueue(player);
+            }
+
         }
+
+        this.waitingPlayers = newWaitingPlayersQueue;
+
     }
 
     private putPlayerInWaitingList(player: Player) {
@@ -115,7 +161,6 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
     private handleNewPlayerJoining(player: Player) {
         this.state.players.set(player.sub, player);
         console.log(`${player.name} joined relay`);
-        this.broadcast('player_joined', player.name);
     }
 
     private sendPlayerToBattle(client: Client) {
@@ -128,12 +173,13 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
     }
 
     private playerShouldEnterBattleOnConnect(player: Player) {
-        return this.state.gameRunning && this.playingPlayers.has(player.sub);
+        return this.isGameRunning() && this.playingPlayers.has(player.sub);
     }
 
     private handlePlayerReconnection(player: Player, client: Client) {
         player = this.state.players.get(player.sub);
         player.sessionId = client.sessionId;
+        player.connected = true;
         console.log(`${player.name} reconnected`);
         return player;
     }
@@ -148,13 +194,24 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
     }
 
     private shouldStartNewGame() {
-        return !this.state.gameRunning && this.waitingPlayers.size() >= PLAYERS_NUM;
+        return !this.isGameRunning() && this.hasEnoughPlayers() && this.hasEnoughConnectedPlayers();
     }
 
 
+    private isGameRunning() {
+        return this.state.gameRunning;
+    }
 
-    // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
-    onDispose () {
+    private hasEnoughPlayers() {
+        return this.waitingPlayers.size() >= PLAYERS_NUM;
+    }
+
+    private hasEnoughConnectedPlayers() {
+        return this.waitingPlayers.toArray().filter(p => p.connected).length === PLAYERS_NUM;
+    }
+
+// Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
+    onDispose() {
         console.log('onDispose relay');
     }
 
@@ -166,10 +223,10 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
  * @param  {String} token The JWT
  * @return {Object}       The decoded payload
  */
-function parseJWT (token) {
+function parseJWT(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+    let jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
     return JSON.parse(jsonPayload);

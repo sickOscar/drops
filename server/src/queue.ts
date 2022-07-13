@@ -34,4 +34,8 @@ export class Queue<T> {
         return this._queue.find(matchingFun) !== undefined;
     }
 
+    find(matchingFun: (T) => boolean) {
+        return this._queue.find(matchingFun);
+    }
+
 }

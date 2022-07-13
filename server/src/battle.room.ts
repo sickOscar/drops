@@ -1,10 +1,12 @@
 import http from "http";
 import {Client, Room} from "colyseus";
 import {Field, FieldCol, GameState, Player} from "./state";
-
+import {Globals} from "./global";
 import {coreListeningSocket, coreSendingSocket} from "./ipc_sockets";
 import {restoreTruncatedMessage} from "./message-handling";
 
+
+const PLAYERS_NUM = 2;
 
 export class BattleRoom extends Room<GameState> {
 
@@ -35,6 +37,7 @@ export class BattleRoom extends Room<GameState> {
                     // remove trailing |
                     message = message.slice(0, -1);
 
+                    // console.log(`message`, message)
 
                     if (message.startsWith("*players:")) {
                         const playersString = message.substring("*players:".length);
@@ -48,11 +51,16 @@ export class BattleRoom extends Room<GameState> {
                                     }
                                 });
 
-                                const newPlayer = this.state.players.get(player.sessionId);
-                                newPlayer.resources = parsedPlayer.resources;
-                                newPlayer.score = parsedPlayer.owned_cells;
+                                if (player) {
+                                    const newPlayer = this.state.players.get(player.sessionId);
+                                    newPlayer.resources = parsedPlayer.resources;
+                                    newPlayer.score = parsedPlayer.owned_cells;
+                                    newPlayer.development = parsedPlayer.development;
+                                    newPlayer.milestones_reached = parsedPlayer.milestones_reached;
+                                    this.state.players.set(player.sessionId, newPlayer)
+                                }
 
-                                this.state.players.set(player.sessionId, newPlayer)
+
 
                             })
                         return;
@@ -61,25 +69,40 @@ export class BattleRoom extends Room<GameState> {
 
                     if (message.startsWith("*field:")) {
 
-                        const fieldString = message.substring("*field:".length);
-                        const receivedField = JSON.parse(fieldString)
+                        const socket = Globals.viewerSocket;
 
-                        const field = new Field();
-                        field.cols = receivedField.map(cols => {
-                            const col = new FieldCol();
-                            col.col = cols.map(cell => cell);
-                            return col;
-                        });
+                        if (!socket) {
+                            // ...
+                            return;
+                        }
 
-                        this.state.field = field;
+                        socket.emit('field', message.substring("*field:".length));
+
+
+                        // const fieldString = message.substring("*field:".length);
+                        // const receivedField = JSON.parse(fieldString)
+                        //
+                        // const field = new Field();
+                        // field.cols = receivedField.map(cols => {
+                        //     const col = new FieldCol();
+                        //     col.col = cols.map(cell => cell);
+                        //     return col;
+                        // });
+                        //
+                        // this.state.field = field;
 
                         return null;
                     }
 
                     if (message.startsWith("*endgame")) {
+                        console.log('ENDGAME')
                         this.state.gameRunning = false;
                         this.broadcast('endgame');
-                        return;
+
+                        this.state.players.clear();
+
+                        this.presence.publish('battle_state', 'endgame');
+
                     }
 
                 })
@@ -104,30 +127,55 @@ export class BattleRoom extends Room<GameState> {
         this.onMessage("identity", (client, data) => {
 
             const [sub, name] = data.split(":");
+            console.log(`got player identity`, sub, name);
 
+            let existingPlayer:Player;
+            this.state.players.forEach((p, key) => {
+                if (p.sub === sub) {
+                    existingPlayer = p;
+                }
+            })
+            
 
+            if (existingPlayer) {
 
-            if (this.state.players.size === 2) {
-                this.broadcast('battle_start');
+                this.state.players.delete(existingPlayer.sessionId);
 
-                if (!this.state.gameRunning) {
+                this.state.players.get(client.sessionId).id = existingPlayer.id;
+                this.state.players.get(client.sessionId).name = name;
+                this.state.players.get(client.sessionId).sub = sub;
 
-                    this.state.gameRunning = true;
+                client.send('battle_start');
 
-                    coreSendingSocket.then(socket => {
-                        const playerIds = [];
-                        this.state.players.forEach(player => {
-                            playerIds.push(player.id);
+            } else {
+
+                this.state.players.get(client.sessionId).name = name;
+                this.state.players.get(client.sessionId).sub = sub;
+
+                client.send(this.state.players.size);
+
+                if (this.state.players.size === PLAYERS_NUM) {
+                    this.broadcast('battle_start');
+
+                    if (!this.state.gameRunning) {
+
+                        this.state.gameRunning = true;
+
+                        coreSendingSocket.then(socket => {
+                            const playerIds = [];
+                            this.state.players.forEach(player => {
+                                playerIds.push(player.id);
+                            })
+                            const startingString = `play:${playerIds.join('|')}`;
+                            console.log(`Starting game : ${startingString}`)
+                            socket.write(startingString);
                         })
-                        const startingString = `play:${playerIds.join('|')}`;
-                        console.log(`Starting game : ${startingString}`)
-                        socket.write(startingString);
-                    })
+                    }
+
                 }
 
-
-
             }
+
         })
 
     }
@@ -165,8 +213,9 @@ export class BattleRoom extends Room<GameState> {
             player.connected = true;
 
         } catch (e) {
-            this.broadcast('player_left', player.name);
-            this.state.players.delete(client.sessionId);
+            console.log(`client disconnected nd removed`, player.sessionId);
+            // this.broadcast('player_left', player.name);
+            // this.state.players.delete(client.sessionId);
         }
 
     }

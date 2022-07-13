@@ -1,6 +1,6 @@
 FROM rust:alpine
 
-RUN apk update && apk add --no-cache musl-dev
+RUN apk update && apk add --no-cache musl-dev pkgconfig openssl-dev
 
 VOLUME /sockets
 
