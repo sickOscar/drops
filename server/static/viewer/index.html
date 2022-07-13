@@ -28,8 +28,10 @@
 <script>
     const url = new URL(window.location.href);
     const HOSTNAME = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
+    const HOSTNAME_NO_PROTOCOL = `${url.hostname}${url.port ? `:${url.port}` : ''}`;
 
-    const MULTIPLAYER_HOST = `ws://localhost:7001`;
+    const MULTIPLAYER_HOST = `wss://${HOSTNAME_NO_PROTOCOL}/viewersocket`;
+    // const MULTIPLAYER_HOST = `ws://${HOSTNAME}:7001`;
 
 
     const socket = io(MULTIPLAYER_HOST);
