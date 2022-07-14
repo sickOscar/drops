@@ -45,7 +45,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                     }
 
                     // exclude cells that are owned by the player both on field and new_field
-                    if field[x_neighbor][y_neighbor] == cell_player_id {
+                    if field[x_neighbor][y_neighbor] == cell_player_id || new_field[x_neighbor][y_neighbor] == cell_player_id {
                         continue;
                     }
 
