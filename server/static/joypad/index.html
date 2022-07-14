@@ -332,8 +332,15 @@
         },
         joinRelayRoom: async function (client, user) {
             Game.relayRoom = await client.join("relay")
-            Game.relayRoom.send("identity", `${user.sub}:${user.name}`)
-            console.log("Joined lobby");
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    console.log('sending identity');
+                    Game.relayRoom.send("identity", `${user.sub}:${user.name}`)
+                    console.log("Joined lobby");
+                    resolve();
+                }, 1000);
+            })
+
         },
         waitForBattleReady: async function () {
             await new Promise((resolve) => {

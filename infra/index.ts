@@ -152,7 +152,17 @@ const secureListener = new aws.lb.Listener("https-listener", {
     defaultActions: [
         {
             type: "forward",
-            targetGroupArn: targetGroup.arn,
+            forward: {
+                targetGroups: [
+                    {
+                        arn: targetGroup.arn
+                    }
+                ],
+                stickiness: {
+                    enabled: true,
+                    duration: 604800
+                }
+            }
         }
     ]
 })
