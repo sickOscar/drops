@@ -115,7 +115,7 @@ fn can_conquer_empty_cell(player: &mut RefMut<Player>) -> bool {
 fn can_conquer_opponent_cell(current_player: &mut RefMut<Player>) -> bool {
     let current_player_milestone = MILESTONES.get(current_player.milestones_reached as usize).unwrap();
     let current_player_bonus = current_player_milestone.conquer_cost_multiplier;
-    current_player.resources > 0 && current_player.resources - (super::RESOURCES_TO_CONQUER_FILLED_CELL as f32 * current_player_bonus) > 0
+    current_player.resources as f32 - (super::RESOURCES_TO_CONQUER_FILLED_CELL as f32 * current_player_bonus) > 0.0
 }
 
 fn has_conquered_cell(current_player: &mut RefMut<Player>, enemy_player: &mut RefMut<Player>, i: &i32, j: &i32) -> bool {
