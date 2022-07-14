@@ -12,7 +12,6 @@
     <script src="./colyseus.js"></script>
 
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-    <link rel='stylesheet' href='//cdn.jsdelivr.net/font-hack/2.020/css/hack.min.css'>
 
     <style>
 
@@ -47,6 +46,9 @@
         .slider-box input {
             width: 100%;
         }
+        header {
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -54,11 +56,13 @@
 <div id="app">
 
     <div id="unauth" class="view">
-        <button onclick="Auth.login()">Login</button>
+        <button class="btn btn-icon" onclick="Auth.login()"><i class="fa-solid fa-door-open"></i></button>
     </div>
 
     <div id="auth" class="view">
-        <button onclick="Auth.logout()">Logout</button>
+        <header>
+            <button onclick="Auth.logout()">Logout</button>
+        </header>
 
         <div id="intro" class="view">
 
