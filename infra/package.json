@@ -1,5 +1,8 @@
 {
     "name": "drops",
+    "scripts": {
+        "connect": "eval $(ssh-agent) && ssh -i ~/.ssh/citd.pem ec2-user@54.228.93.106"
+    },
     "devDependencies": {
         "@types/node": "^14"
     },

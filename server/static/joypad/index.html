@@ -160,11 +160,13 @@
         },
         fetchAuthConfig: () => fetch("auth_config.json"),
         login: async () => {
+            console.log(`login AUTH_REDIRECT_URI`, AUTH_REDIRECT_URI)
             await Auth.auth0.loginWithRedirect({
                 redirect_uri: AUTH_REDIRECT_URI
             });
         },
         logout: () => {
+            console.log('logout AUTH_REDIRECT_URI', AUTH_REDIRECT_URI)
             Auth.auth0.logout({
                 returnTo: AUTH_REDIRECT_URI
             });
