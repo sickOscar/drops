@@ -71,17 +71,21 @@
     function draw() {
         background(81);
 
-        for (let i = 0; i < field.length; i++) {
-            for (let j = 0; j < field[i].length; j++) {
-                if (field[i][j] > 0) {
-                    fill(playersMap[field[i][j]].color);
-                } else {
-                    fill(0);
-                }
+        if (Object.entries(playersMap).length > 0) {
+            for (let i = 0; i < field.length; i++) {
+                for (let j = 0; j < field[i].length; j++) {
+                    if (field[i][j] > 0) {
+                        fill(playersMap[field[i][j]].color);
+                    } else {
+                        fill(0);
+                    }
 
-                rect(i * CELL_SIZE + 2, j * CELL_SIZE + 2, 10, CELL_SIZE);
+                    rect(i * CELL_SIZE + 2, j * CELL_SIZE + 2, 10, CELL_SIZE);
+                }
             }
         }
+
+
 
 
     }
