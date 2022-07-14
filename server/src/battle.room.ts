@@ -161,6 +161,23 @@ export class BattleRoom extends Room<GameState> {
 
                         this.state.gameRunning = true;
 
+                        const colors = [
+                            '#FF0000',
+                            '#00FF00',
+                            '#0000FF',
+                            '#FFFF00',
+                            '#FF00FF',
+                            '#00FFFF',
+                            '#A047C9ED',
+                            '#1C4620FF'
+                        ];
+
+                        let index = 0;
+                        this.state.players.forEach((p, key) => {
+                            p.color = colors[index % colors.length];
+                            index++;
+                        })
+
                         coreSendingSocket.then(socket => {
                             const playerIds = [];
                             this.state.players.forEach(player => {

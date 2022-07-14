@@ -49,6 +49,13 @@
         header {
             text-align: right;
         }
+
+        #color {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -90,6 +97,13 @@
         </div>
 
         <div id="joypad" class="view">
+
+            <div class="color-box">
+                <p>
+                    <span id="color"></span> Your color
+                </p>
+            </div>
+
             <div>
                 <p class="slider-box">
                     <label for="military">Military</label>
@@ -140,8 +154,8 @@
     const HOSTNAME_NO_PROTOCOL = `${url.hostname}${url.port ? `:${url.port}` : ''}`;
     const AUTH_REDIRECT_URI = `${HOSTNAME}${url.pathname}`;
 
-    // const MULTIPLAYER_HOST = `ws://localhost:7000`
-    const MULTIPLAYER_HOST = `wss://${HOSTNAME_NO_PROTOCOL}/server`
+    const MULTIPLAYER_HOST = `ws://localhost:7000`
+    // const MULTIPLAYER_HOST = `wss://${HOSTNAME_NO_PROTOCOL}/server`
 
     window.onload = async () => {
         await Auth.configureClient()
@@ -224,6 +238,8 @@
         relayQueue: document.getElementById("relay"),
         endScreen: document.getElementById("end-screen"),
         enqueueButton: document.getElementById("enqueue-button"),
+
+        colorBox: document.getElementById("color"),
 
         // methods
         showUnauth: () => {
@@ -389,7 +405,8 @@
 
                 if (me) {
 
-                    console.log(`me`, me)
+                    console.log(`me.color`, me.color)
+                    UI.colorBox.style.backgroundColor = me.color;
 
                     UI.resourcesBox.innerText = `${me.resources || 0}`;
                     UI.scoreBox.innerHTML = `${me.score || 0}`;
