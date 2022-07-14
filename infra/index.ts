@@ -96,7 +96,7 @@ const web = new aws.ec2.Instance("drops-server", {
     associatePublicIpAddress: true,
     vpcSecurityGroupIds: [securityGroup.id],
     ami: "ami-0d71ea30463e0ff8d",
-    instanceType: "t3.micro",
+    instanceType: "t3.small",
     tags: {
         Name: "drops",
     },
@@ -106,6 +106,7 @@ const web = new aws.ec2.Instance("drops-server", {
 
 const cert = new aws.acm.Certificate("cert", {
     domainName: "robosnipers.com",
+    subjectAlternativeNames: ["robosnipers.com", "www.robosnipers.com"],
     tags: {
         Name: "drops",
     },
@@ -156,17 +157,22 @@ const secureListener = new aws.lb.Listener("https-listener", {
     ]
 })
 
-// const httpListener = new aws.lb.Listener("http-listener", {
-//     loadBalancerArn: alb.id,
-//     protocol: "HTTP",
-//     port: 433,
-//     defaultActions: [
-//         {
-//             type: "forward",
-//             targetGroupArn: targetGroup.arn,
-//         }
-//     ]
-// })
+const httpListener = new aws.lb.Listener("http-listener", {
+    loadBalancerArn: alb.id,
+    protocol: "HTTP",
+    port: 80,
+    defaultActions: [
+        {
+            type: "redirect",
+            redirect: {
+                statusCode: "HTTP_301",
+                protocol: "HTTPS",
+                port: "443",
+                host: "robosnipers.com",
+            }
+        }
+    ]
+})
 
 
 const primary = new aws.route53.Zone("drs", {
@@ -191,6 +197,22 @@ const wwwRecord = new aws.route53.Record("www-record", {
     ttl: 5,
     records: [baseRecord.name],
 })
+
+// const validationRecord1 = new aws.route53.Record("validation-record1", {
+//     zoneId: primary.id,
+//     type: "CNAME",
+//     name: "_a2fe461d49a64c73d886d8b3692bf238.robosnipers.com.",
+//     ttl: 5,
+//     records: [cert.domainValidationOptions[0].resourceRecordName],
+// })
+//
+// const validationRecord2 = new aws.route53.Record("validation-record2", {
+//     zoneId: primary.id,
+//     type: "CNAME",
+//     name: "_a4fda78699bc3c29e630f28b9353ff96.www.robosnipers.com.",
+//     ttl: 5,
+//     records: [cert.domainValidationOptions[1].resourceRecordName],
+// })
 
 
 export const publicDns = alb.dnsName;

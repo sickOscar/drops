@@ -44,5 +44,11 @@ services:
     volumes:
       - ./conf/nginx:/etc/nginx/conf.d
       - ./server/static/:/usr/share/nginx/html
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "10m"
+            max-file: "3"
+            path: "/var/log/nginx/access.log"
     networks:
       - drops
