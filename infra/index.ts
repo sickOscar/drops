@@ -48,6 +48,11 @@ const association = new aws.ec2.RouteTableAssociation("association", {
     routeTableId: routeTable.id,
 })
 
+const association2 = new aws.ec2.RouteTableAssociation("association2", {
+    subnetId: publicSubnet2.id,
+    routeTableId: routeTable.id,
+})
+
 const securityGroup = new aws.ec2.SecurityGroup("drops-sg", {
     vpcId: vpc.id,
     description: "Drops security group",
