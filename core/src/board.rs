@@ -84,7 +84,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                             spend_resources_to_conquer_cell(&mut current_player);
 
                             current_player.owned_cells += 1;
-                            enemy_player.owned_cells = cmp::max(0, enemy_player.owned_cells - 1);
+                            enemy_player.owned_cells = cmp::max(1, enemy_player.owned_cells - 1);
 
                             new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
                             has_conquered += 1.0;
