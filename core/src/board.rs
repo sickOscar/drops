@@ -56,6 +56,9 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
             // shuffle the list of neighbors
             neighbors.shuffle(&mut thread_rng());
 
+            let mut current_player_cell_diff:i32 = 0;
+            let mut enemies_hashmap:HashMap<i32, i32> = HashMap::new();
+
             for (x_neighbor, y_neighbor) in neighbors {
                 if has_conquered >= 1.0 {
                     continue;
@@ -69,7 +72,8 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
 
                     if can_conquer_empty_cell(player) && neighbor_value_on_new_field == 0 {
                         player.spend_resources(super::RESOURCES_TO_CONQUER_EMPTY_CELL);
-                        player.owned_cells += 1;
+                        // player.owned_cells += 1;
+                        current_player_cell_diff += 1;
 
                         new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
 
@@ -83,8 +87,16 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                         if can_conquer_opponent_cell(current_player) {
                             spend_resources_to_conquer_cell(&mut current_player);
 
-                            current_player.owned_cells += 1;
-                            enemy_player.owned_cells = cmp::max(1, enemy_player.owned_cells - 1);
+                            // current_player.owned_cells += 1;
+                            current_player_cell_diff += 1;
+
+                            if enemies_hashmap.contains_key(&neighbor_value) {
+                                enemies_hashmap.insert(neighbor_value, enemies_hashmap.get(&neighbor_value).unwrap().clone() + 1);
+                            } else {
+                                enemies_hashmap.insert(neighbor_value, 1);
+                            }
+
+                            enemy_player.owned_cells -= 1;
 
                             new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
                             has_conquered += 1.0;
@@ -93,6 +105,18 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                         new_field[x_neighbor as usize][y_neighbor as usize] = neighbor_value;
                     }
                 }
+            }
+
+            // update player owned cells
+            if current_player_cell_diff > 0 {
+                let player = &mut players.get(&cell_player_id).unwrap().borrow_mut();
+                player.owned_cells += current_player_cell_diff;
+            }
+
+            // update enemies
+            for (enemy_id, enemy_count) in enemies_hashmap {
+                let enemy_player = &mut players.get(&enemy_id).unwrap().borrow_mut();
+                enemy_player.owned_cells -= enemy_count;
             }
         }
     }

@@ -85,7 +85,8 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
         return true;
     }
 
-    public onJoin(client: Client, options: any = {}) {
+    public async onJoin(client: Client, options: any = {}) {
+        return true;
     }
 
     public async onLeave(client: Client, consented: boolean) {
