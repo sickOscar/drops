@@ -38,7 +38,6 @@ async function startGameServer() {
     return gameServer.listen(multiplayerServerPort)
 }
 
-
 async function startViewerServer() {
     const app = express();
     app.use(express.json());
