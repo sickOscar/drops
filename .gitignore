@@ -1,2 +1,4 @@
 .idea
 deploy.sh
+connect.sh
+sync.sh
