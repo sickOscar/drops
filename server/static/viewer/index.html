@@ -39,7 +39,7 @@
     });
 
     let field = [];
-    let players = [];
+    let playersMap = {};
 
 
     socket.on('field', (data) => {
@@ -52,7 +52,9 @@
 
     socket.on('players', (data) => {
         const playersStrings = data.split('/');
-        players = playersStrings.map(JSON.stringify);
+        playersStrings.map(JSON.stringify).forEach(player => {
+            playersMap[player.id] = player;
+        })
     });
 
 
@@ -72,7 +74,7 @@
         for (let i = 0; i < field.length; i++) {
             for (let j = 0; j < field[i].length; j++) {
                 if (field[i][j] > 0) {
-                    fill(colors[field[i][j] % colors.length]);
+                    fill(colors[player.id % colors.length]);
                 } else {
                     fill(0);
                 }
