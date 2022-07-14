@@ -39,6 +39,7 @@
     });
 
     let field = [];
+    let players = [];
 
 
     socket.on('field', (data) => {
@@ -51,18 +52,11 @@
 
     socket.on('players', (data) => {
         console.log(data);
+        const playersStrings = data.split('/');
+        players = playersStrings.map(JSON.stringify);
     });
 
-    const colors = [
-        '#FF0000',
-        '#00FF00',
-        '#0000FF',
-        '#FFFF00',
-        '#FF00FF',
-        '#00FFFF',
-        '#A047C9ED',
-        '#1C4620FF'
-    ];
+
 
     const CELL_SIZE = 10;
 

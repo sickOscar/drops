@@ -60,37 +60,28 @@ export class BattleRoom extends Room<GameState> {
                                     this.state.players.set(player.sessionId, newPlayer)
                                 }
 
-
-
                             })
+
+                        // send to viewwer
+                        const viewerSocket = Globals.viewerSocket;
+                        if (!viewerSocket) {
+                            return;
+                        }
+                        viewerSocket.emit('players', message.substring("*players:".length));
+
                         return;
 
                     }
 
                     if (message.startsWith("*field:")) {
 
-                        const socket = Globals.viewerSocket;
+                        const viewerSocket = Globals.viewerSocket;
 
-                        if (!socket) {
-                            // ...
+                        if (!viewerSocket) {
                             return;
                         }
 
-                        socket.emit('field', message.substring("*field:".length));
-
-
-                        // const fieldString = message.substring("*field:".length);
-                        // const receivedField = JSON.parse(fieldString)
-                        //
-                        // const field = new Field();
-                        // field.cols = receivedField.map(cols => {
-                        //     const col = new FieldCol();
-                        //     col.col = cols.map(cell => cell);
-                        //     return col;
-                        // });
-                        //
-                        // this.state.field = field;
-
+                        viewerSocket.emit('field', message.substring("*field:".length));
                         return null;
                     }
 

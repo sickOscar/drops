@@ -5,7 +5,6 @@ import { WebSocketTransport } from "@colyseus/ws-transport"
 import {DropRelayRoom} from "./src/relay.room";
 import {enhanced_logging} from "./src/logging";
 import express from "express";
-import cors from 'cors';
 import {Server as SocketIoServer} from "socket.io"
 import {Globals} from "./src/global";
 
@@ -53,8 +52,6 @@ async function startViewerServer() {
     io.on('connection', socket => {
         console.log('viewer connected');
         Globals.viewerSocket = socket;
-        socket.emit('field', "test");
-
     })
 
     return server.listen(viewerServerPort);
