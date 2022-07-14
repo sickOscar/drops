@@ -96,7 +96,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                                 enemies_hashmap.insert(neighbor_value, 1);
                             }
 
-                            enemy_player.owned_cells -= 1;
+                            // enemy_player.owned_cells -= 1;
 
                             new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
                             has_conquered += 1.0;
