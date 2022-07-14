@@ -53,7 +53,7 @@
     socket.on('players', (data) => {
         const playersStrings = data.split('/');
         playersStrings.map(JSON.stringify).forEach(player => {
-            playersMap[player.id] = player;
+            playersMap[parseInt(player.id)] = player;
         })
     });
 
