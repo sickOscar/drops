@@ -275,27 +275,33 @@
         },
         startGameLoop: async function (client, user) {
 
-            console.log('Joining relay room...');
-            await Game.joinRelayRoom(client, user);
+            try {
+                console.log('Joining relay room...');
+                await Game.joinRelayRoom(client, user);
 
-            console.log('Waiting for enough players...');
-            await Game.waitForBattleReady();
+                console.log('Waiting for enough players...');
+                await Game.waitForBattleReady();
 
-            console.log('Joining battle room...');
-            await Game.joinBattleRoom(client, user);
+                console.log('Joining battle room...');
+                await Game.joinBattleRoom(client, user);
 
-            console.log('Waiting for start battle message...');
-            await Game.waitForBattleStart();
+                console.log('Waiting for start battle message...');
+                await Game.waitForBattleStart();
 
-            console.log("Battle started");
+                console.log("Battle started");
 
-            UI.showComponent(UI.joypad);
-            UI.hideComponent(UI.waitingBox);
-            UI.hideComponent(UI.relayQueue);
+                UI.showComponent(UI.joypad);
+                UI.hideComponent(UI.waitingBox);
+                UI.hideComponent(UI.relayQueue);
 
-            Joypad.handleInput();
+                Joypad.handleInput();
 
-            Game.handleStateChange(user, client);
+                Game.handleStateChange(user, client);
+            } catch (err) {
+                alert(err);
+                window.location.reload();
+            }
+
         },
         joinRelayRoom: async function (client, user) {
             Game.relayRoom = await client.join("relay")
