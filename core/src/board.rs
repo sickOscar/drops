@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
+use std::cmp;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
@@ -68,7 +69,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
 
                     if can_conquer_empty_cell(player) && neighbor_value_on_new_field == 0 {
                         player.spend_resources(super::RESOURCES_TO_CONQUER_EMPTY_CELL);
-                        player.owned_cells = player.owned_cells + 1;
+                        player.owned_cells += 1;
 
                         new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
 
@@ -83,7 +84,7 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                             spend_resources_to_conquer_cell(&mut current_player);
 
                             current_player.owned_cells += 1;
-                            enemy_player.owned_cells -= 1;
+                            enemy_player.owned_cells = cpm::max(0, enemy_player.owned_cells - 1);
 
                             new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
                             has_conquered += 1.0;
