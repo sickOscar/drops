@@ -30,11 +30,13 @@
     const HOSTNAME = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
     const HOSTNAME_NO_PROTOCOL = `${url.hostname}${url.port ? `:${url.port}` : ''}`;
 
-    const MULTIPLAYER_HOST = `wss://${HOSTNAME_NO_PROTOCOL}/viewersocket`;
+    const MULTIPLAYER_HOST = `${HOSTNAME}`;
     // const MULTIPLAYER_HOST = `ws://${HOSTNAME}:7001`;
 
 
-    const socket = io(MULTIPLAYER_HOST);
+    const socket = io(MULTIPLAYER_HOST, {
+        path: "/viewersocket/socket.io",
+    });
 
     let field = [];
 
