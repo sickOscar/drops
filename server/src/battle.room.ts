@@ -57,7 +57,6 @@ export class BattleRoom extends Room<GameState> {
                                     newPlayer.score = parsedPlayer.owned_cells;
                                     newPlayer.development = parsedPlayer.development;
                                     newPlayer.milestones_reached = parsedPlayer.milestones_reached;
-                                    this.state.players.set(player.sessionId, newPlayer)
                                 }
 
                             })

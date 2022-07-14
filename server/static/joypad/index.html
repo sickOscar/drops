@@ -79,6 +79,9 @@
 
             <p class="text-center mt-5">
 
+                <h3>Welcome</h3>
+                <h2 id="welcome-player-name"></h2>
+
                 <button class="btn btn-secondary" id="enqueue-button">
                     <em class="fa fa-rocket"></em>
                     Join!
@@ -240,6 +243,7 @@
         enqueueButton: document.getElementById("enqueue-button"),
 
         colorBox: document.getElementById("color"),
+        welcomePlayerName: document.getElementById("welcome-player-name"),
 
         // methods
         showUnauth: () => {
@@ -250,6 +254,10 @@
             UI.hideComponent(UI.unauthDiv)
             UI.showComponent(UI.authDiv);
             UI.showComponent(UI.introDiv);
+
+            Auth.getUser().then(user => {
+                UI.welcomePlayerName.innerText = user.name;
+            })
 
             UI.enqueueButton.addEventListener("click", e => {
                 e.preventDefault();
