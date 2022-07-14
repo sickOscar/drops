@@ -46,6 +46,7 @@
         .slider-box input {
             width: 100%;
         }
+
         header {
             text-align: right;
         }
@@ -55,6 +56,19 @@
             width: 30px;
             height: 30px;
             border: none;
+        }
+
+        #waiting-box {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .range-container {
+            display: flex;
+        }
+        .range-input-value {
+            display: block;
+            width: 80px;
+            text-align: right;
         }
     </style>
 </head>
@@ -83,7 +97,6 @@
             <p class=" mt-5">
 
 
-
                 <button class="btn btn-secondary" id="enqueue-button">
                     <em class="fa fa-rocket"></em>
                     Join!
@@ -98,6 +111,7 @@
         </div>
 
         <div id="relay" class="view">
+            <p>People waiting to play:</p>
             <ol id="relay-queue-box"></ol>
         </div>
 
@@ -108,31 +122,52 @@
                     <span id="color"></span> Your color
                 </p>
             </div>
-
+            <hr>
             <div>
-                <p class="slider-box">
-                    <label for="military">Military</label>
-                    <button class="lock" data-locks="military">lock</button>
-                    <input type="range" value="33" class="range-input" id="military" min="0" max="100" step="1">
-                    <span id="military-value" class="range-input-value"></span>
-                </p>
+                <div class="slider-box">
+                    <label for="military">
+                        <em class="fa fa-skull-crossbones"></em> Military
+                    </label>
+                    <div class="range-container">
+                        <button class="btn btn-icon lock" data-locks="military">
+                            <em id="military-lock-icon" class="fa fa-lock-open"></em>
+                        </button>
+                        <input type="range" value="33" class="range-input" id="military" min="0" max="100" step="1">
+                        <span id="military-value" class="range-input-value"></span>
+                    </div>
+                </div>
             </div>
+            <hr>
             <div>
-                <p class="slider-box">
-                    <label for="production">Production</label>
-                    <button class="lock" data-locks="production">lock</button>
-                    <input type="range" value="34" class="range-input" id="production" min="0" max="100" step="1">
-                    <span id="production-value" class="range-input-value"></span>
-                </p>
+                <div class="slider-box">
+                    <label for="production">
+                        <em class="fa fa-industry"></em> Production
+                    </label>
+                    <div class="range-container">
+                        <button class="btn btn-icon lock" data-locks="production">
+                            <em id="production-lock-icon" class="fa fa-lock-open"></em>
+                        </button>
+                        <input type="range" value="34" class="range-input" id="production" min="0" max="100" step="1">
+                        <span id="production-value" class="range-input-value"></span>
+                    </div>
+                </div>
             </div>
+            <hr>
             <div>
-                <p class="slider-box">
-                    <label for="research">Research</label>
-                    <button class="lock" data-locks="research">lock</button>
-                    <input type="range" value="33" class="range-input" id="research" min="0" max="100" step="1">
-                    <span id="research-value" class="range-input-value"></span>
-                </p>
+                <div class="slider-box">
+                    <label for="research">
+                        <em class="fa fa-flask"></em> Research
+                    </label>
+                    <div class="range-container">
+                        <button class="btn btn-icon lock" data-locks="research">
+                            <em id="research-lock-icon" class="fa fa-lock-open"></em>
+                        </button>
+                        <input type="range" value="33" class="range-input" id="research" min="0" max="100" step="1">
+                        <span id="research-value" class="range-input-value"></span>
+                    </div>
+                </div>
             </div>
+            <hr>
             <div>
                 resources <span id="resources-box"></span>
                 | cells <span id="score-box"></span>
@@ -153,13 +188,23 @@
 
 <script>
 
+    const DEVELOPMENT_AT_END_ROUND = 5;
+    const RESOURCES_AT_END_ROUND = 50;
+
     const url = new URL(window.location.href);
 
     const HOSTNAME = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
     const HOSTNAME_NO_PROTOCOL = `${url.hostname}${url.port ? `:${url.port}` : ''}`;
     const AUTH_REDIRECT_URI = `${HOSTNAME}${url.pathname}`;
 
+    //
+    // DEV
+    //
     // const MULTIPLAYER_HOST = `ws://localhost:7000`
+
+    //
+    // PRODUCTION
+    //
     const MULTIPLAYER_HOST = `wss://${HOSTNAME_NO_PROTOCOL}/server`
 
     window.onload = async () => {
@@ -241,11 +286,16 @@
         lockButtons: Array.from(document.getElementsByClassName('lock')),
         // relay queue
         relayQueue: document.getElementById("relay"),
+        relayQueueBox: document.getElementById("relay-queue-box"),
         endScreen: document.getElementById("end-screen"),
         enqueueButton: document.getElementById("enqueue-button"),
 
         colorBox: document.getElementById("color"),
         welcomePlayerName: document.getElementById("welcome-player-name"),
+
+        militaryValue: document.getElementById("military-value"),
+        productionValue: document.getElementById("production-value"),
+        researchValue: document.getElementById("research-value"),
 
         // methods
         showUnauth: () => {
@@ -282,20 +332,31 @@
         updateRelayQueue: () => {
             const queue = Game.relayQueue;
             console.log(`queue`, queue)
-            UI.relayQueue.innerHTML = '';
+            UI.relayQueueBox.innerHTML = '';
             for (let i = 0; i < queue.length; i++) {
                 const item = queue[i];
                 const name = item.split('|')[0];
                 const connected = item.split('|')[1] === "true";
+                const avatar = item.split('|')[2];
                 const li = document.createElement('li');
+                const img = document.createElement('img');
+                img.src = avatar;
+                const textSpan = document.createElement('span');
+                textSpan.innerText = name;
                 if (!connected) {
                     li.classList.add('disconnected')
                 }
-                li.innerText = name;
-                UI.relayQueue.appendChild(li);
+                li.appendChild(img);
+                li.appendChild(textSpan);
+                UI.relayQueueBox.appendChild(li);
             }
         },
 
+    }
+
+    function buildIdentityString(user) {
+        console.log(`user`, user)
+        return `${user.sub}#${user.name}#${user.picture}`;
     }
 
     const Game = {
@@ -341,30 +402,31 @@
 
         },
         joinRelayRoom: async function (client, user) {
+
             Game.relayRoom = await client.join("relay")
-            await new Promise(resolve => {
-                setTimeout(() => {
-                    console.log('sending identity');
-                    Game.relayRoom.send("identity", `${user.sub}:${user.name}`)
-                    console.log("Joined lobby");
-                    resolve();
-                }, 1000);
+
+            console.log('sending identity');
+            Game.relayRoom.send("identity", buildIdentityString(user))
+            console.log("Joined lobby");
+
+            Game.relayRoom.onMessage("queue", (queue) => {
+                Game.relayQueue = queue;
+                UI.updateRelayQueue();
             })
 
         },
         waitForBattleReady: async function () {
             await new Promise((resolve) => {
 
-                Game.relayRoom.onMessage("queue", (queue) => {
-                    Game.relayQueue = queue;
-                    UI.updateRelayQueue();
-                })
+                UI.showComponent(UI.relayQueue);
+                UI.showComponent(UI.waitingBox);
 
                 Game.relayRoom.onMessage("battle_ready", () => {
                     console.log("Battle ready");
                     Game.relayRoom.leave();
                     resolve();
                 });
+
             })
         },
         waitForBattleStart: async function () {
@@ -395,14 +457,12 @@
 
             this.saveBattleSessionOnStorage();
 
-            Game.battleRoom.send("identity", `${user.sub}:${user.name}`)
+            Game.battleRoom.send("identity", buildIdentityString(user))
 
             UI.showComponent(UI.waitingBox);
         },
         handleStateChange: function (user, client) {
             Game.battleRoom.onStateChange(state => {
-
-                console.log(`state`, state)
 
                 field = []
                 state.field.cols.forEach((col) => {
@@ -453,6 +513,11 @@
 
         handleInput: () => {
 
+            UI.militaryValue.innerText = `33`;
+            UI.productionValue.innerText = `${Math.ceil((34 / 100) * RESOURCES_AT_END_ROUND)}/turn`;
+            UI.researchValue.innerText = `${Math.ceil((33 / 100) * DEVELOPMENT_AT_END_ROUND)}/turn`;
+
+
             const maxTotal = 100;
 
             const getTotal = function () {
@@ -478,8 +543,18 @@
                         })
                         input.value = value - (sum - maxTotal);
                         e.preventDefault();
+
+                        UI.militaryValue.innerText = `${Math.ceil(UI.inputs[0].value)}`;
+                        UI.productionValue.innerText = `${((UI.inputs[1].value / 100) * RESOURCES_AT_END_ROUND).toFixed(1)}/turn`;
+                        UI.researchValue.innerText = `${((UI.inputs[2].value / 100) * DEVELOPMENT_AT_END_ROUND).toFixed(1)}/turn`;
+
                         return false;
                     }
+
+                    UI.militaryValue.innerText = `${Math.ceil(UI.inputs[0].value)}`;
+                    UI.productionValue.innerText = `${Math.ceil((UI.inputs[1].value / 100) * RESOURCES_AT_END_ROUND)}/turn`;
+                    UI.researchValue.innerText = `${Math.ceil((UI.inputs[2].value / 100) * DEVELOPMENT_AT_END_ROUND)}/turn`;
+
 
                     return true;
                 });
@@ -489,7 +564,6 @@
                 input.addEventListener('change', e => {
 
                     const toSend = [];
-
                     UI.inputs.forEach(function (input) {
 
                         switch (input.id) {
@@ -505,22 +579,28 @@
                         }
 
                     });
-
                     Game.battleRoom.send('action', toSend.join(','));
+
 
                 });
             });
 
             UI.lockButtons.forEach(button => {
                 button.addEventListener('click', event => {
-                    const forInput = button.getAttribute('data-locks');
 
+                    const forInput = button.getAttribute('data-locks');
                     const input = document.getElementById(forInput)
+                    const icon = document.getElementById(`${forInput}-lock-icon`)
+
                     console.log(input.getAttribute('disabled'))
                     if (input.getAttribute('disabled') === null) {
                         input.setAttribute('disabled', "true");
+                        icon.classList.add('fa-lock');
+                        icon.classList.remove('fa-lock-open');
                     } else {
                         input.removeAttribute('disabled')
+                        icon.classList.add('fa-lock-open');
+                        icon.classList.remove('fa-lock');
                     }
 
                 })

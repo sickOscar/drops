@@ -4,9 +4,8 @@ import {Field, FieldCol, GameState, Player} from "./state";
 import {Globals} from "./global";
 import {coreListeningSocket, coreSendingSocket} from "./ipc_sockets";
 import {restoreTruncatedMessage} from "./message-handling";
+import {PLAYERS_NUM} from "./const";
 
-
-const PLAYERS_NUM = 2;
 
 export class BattleRoom extends Room<GameState> {
 
@@ -43,6 +42,7 @@ export class BattleRoom extends Room<GameState> {
                         const playersString = message.substring("*players:".length);
                         playersString.split('/')
                             .forEach(playerString => {
+
                                 const parsedPlayer:any = JSON.parse(playerString);
                                 let player:Player;
                                 this.state.players.forEach((p, key) => {
@@ -50,13 +50,12 @@ export class BattleRoom extends Room<GameState> {
                                         player = p;
                                     }
                                 });
-
+                                
                                 if (player) {
-                                    const newPlayer = this.state.players.get(player.sessionId);
-                                    newPlayer.resources = parsedPlayer.resources;
-                                    newPlayer.score = parsedPlayer.owned_cells;
-                                    newPlayer.development = parsedPlayer.development;
-                                    newPlayer.milestones_reached = parsedPlayer.milestones_reached;
+                                    player.resources = parsedPlayer.resources;
+                                    player.score = parsedPlayer.owned_cells;
+                                    player.development = parsedPlayer.development;
+                                    player.milestones_reached = parsedPlayer.milestones_reached;
                                 }
 
                             })
@@ -66,7 +65,10 @@ export class BattleRoom extends Room<GameState> {
                         if (!viewerSocket) {
                             return;
                         }
-                        viewerSocket.emit('players', message.substring("*players:".length));
+
+
+                        const playersList = Object.values(this.state.players.toJSON());
+                        viewerSocket.emit('players', playersList);
 
                         return;
 
@@ -116,8 +118,8 @@ export class BattleRoom extends Room<GameState> {
 
         this.onMessage("identity", (client, data) => {
 
-            const [sub, name] = data.split(":");
-            console.log(`got player identity`, sub, name);
+            const [sub, name, avatar] = data.split("#");
+            console.log(`got player identity`, sub, name, avatar);
 
             let existingPlayer:Player;
             this.state.players.forEach((p, key) => {
@@ -129,18 +131,25 @@ export class BattleRoom extends Room<GameState> {
 
             if (existingPlayer) {
 
-                this.state.players.delete(existingPlayer.sessionId);
-
-                this.state.players.get(client.sessionId).id = existingPlayer.id;
-                this.state.players.get(client.sessionId).name = name;
-                this.state.players.get(client.sessionId).sub = sub;
+                console.log(`existingPlayer`, existingPlayer)
+                this.state.players.set(client.sessionId, existingPlayer.clone());
+                if (client.sessionId !== existingPlayer.sessionId) {
+                    this.state.players.delete(existingPlayer.sessionId);
+                }
 
                 client.send('battle_start');
 
             } else {
 
-                this.state.players.get(client.sessionId).name = name;
-                this.state.players.get(client.sessionId).sub = sub;
+                const player = new Player();
+                player.id = BattleRoom.playerIndex++;
+                player.sessionId = client.sessionId;
+                player.name = name;
+                player.avatar = avatar;
+                player.sub = sub;
+                player.connected = true;
+
+                this.state.players.set(client.sessionId, player);
 
                 client.send(this.state.players.size);
 
@@ -196,10 +205,7 @@ export class BattleRoom extends Room<GameState> {
     // When client successfully join the room
     async onJoin(client: Client, options: any, auth: any) {
 
-        const player = new Player();
-        player.id = BattleRoom.playerIndex++;
-        player.sessionId = client.sessionId;
-        this.state.players.set(client.sessionId, player);
+
 
     }
 
@@ -221,8 +227,6 @@ export class BattleRoom extends Room<GameState> {
 
         } catch (e) {
             console.log(`client disconnected nd removed`, player.sessionId);
-            // this.broadcast('player_left', player.name);
-            // this.state.players.delete(client.sessionId);
         }
 
     }

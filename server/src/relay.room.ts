@@ -4,8 +4,9 @@ import http from "http";
 import {Player, RelayState} from "./state";
 import {coreListeningSocket} from "./ipc_sockets";
 import {restoreTruncatedMessage} from "./message-handling";
+import {PLAYERS_NUM} from "./const";
 
-const PLAYERS_NUM = 2;
+
 
 export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
     public allowReconnectionTime: number = 0;
@@ -44,11 +45,11 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
 
         this.onMessage("identity", (client, data) => {
 
-            const [sub, name] = data.split(":");
+            const [sub, name, avatar] = data.split("#");
 
-            console.log(`RELAY: got player identity`, sub, name)
+            console.log(`RELAY: got player identity`, sub, name, avatar)
 
-            let player = this.createPlayerOnJoin(client, sub, name);
+            let player = DropRelayRoom.createPlayerOnJoin(client, sub, name, avatar);
 
             if (this.playerAlreadyExists(sub)) {
                 player = this.handlePlayerReconnection(player, client);
@@ -116,7 +117,7 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
 
     private broadcatsQueue() {
         this.broadcast('queue', this.waitingPlayers.toArray()
-            .map(p => `${p.name}|${p.connected}`)
+            .map(p => `${p.name}|${p.connected}|${p.avatar}`)
         );
     }
 
@@ -185,12 +186,13 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
         return player;
     }
 
-    private createPlayerOnJoin(client: Client, sub, name) {
+    private static createPlayerOnJoin(client: Client, sub, name, avatar:string) {
         let player = new Player();
         player.connected = true;
         player.sessionId = client.sessionId;
         player.sub = sub;
         player.name = name;
+        player.avatar = avatar;
         return player;
     }
 

@@ -15,17 +15,17 @@ pub struct Player {
     pub military: f32,
     pub production: f32,
     pub research: f32,
-    pub resources: i32,
+    pub resources: f32,
     pub owned_cells: i32,
-    pub development:i32,
+    pub development:f32,
     pub milestones_reached: i32,
 }
 
 impl Player {
-    pub fn spend_resources(&mut self, amount: i32) {
+    pub fn spend_resources(&mut self, amount: f32) {
         self.resources -= amount;
     }
-    pub fn gain_resources(&mut self, amount: i32) {
+    pub fn gain_resources(&mut self, amount: f32) {
         self.resources += amount;
     }
     pub fn update_resources(&mut self) {
@@ -38,11 +38,11 @@ impl Player {
         let resource_gain = r * p * m;
 
 
-        self.gain_resources(resource_gain as i32);
+        self.gain_resources(resource_gain);
     }
     pub fn update_development(&mut self) {
-        let development_gain = super::DEVELOPMENT_AT_END_ROUND as f32 * self.research;
-        self.development += development_gain as i32;
+        let development_gain = super::DEVELOPMENT_AT_END_ROUND * self.research;
+        self.development += development_gain;
 
         if self.development > super::MAX_DEVELOPMENT {
             self.development = super::MAX_DEVELOPMENT;
@@ -51,7 +51,7 @@ impl Player {
         if self.development == super::MAX_DEVELOPMENT {
 
             self.milestones_reached += 1;
-            self.development = 0;
+            self.development = 0.0;
 
             // cap milestones_reached at mat MILESTONES.len()
             if self.milestones_reached >= MILESTONES.len() as i32 {
@@ -109,10 +109,10 @@ pub fn create_player(id: i32) -> Player{
         military: 0.33,
         production: 0.33,
         research: 0.34,
-        resources: 0,
+        resources: 0.0,
         owned_cells: 0,
         milestones_reached: 0,
-        development: 0,
+        development: 0.0,
     };
     player
 }

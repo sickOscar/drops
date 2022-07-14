@@ -1,27 +1,52 @@
-<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/p5.min.js"></script>
-<script src="qrcode.min.js"></script>
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-    }
+<html>
+<head>
+    <title>Drops field</title>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/p5.min.js"></script>
+    <script src="qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+          integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="../css/bootstrap4-neon-glow.min.css">
 
-    #qrcode {
-        display: block;
-        position: absolute;
-        right: 0;
-        bottom: 0;
-    }
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
 
-    body {
-        background: #161616;
-        display: flex;
-        justify-content: center;
-    }
-</style>
+        #qrcode {
+            display: block;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+        }
 
+        body {
+            background: #161616;
+            display: flex;
+            justify-content: center;
+        }
+
+        #players {
+            margin-left: 40px;
+        }
+
+        #ranking span.color {
+            display: inline-block;
+            height: 20px;
+            width: 20px;
+        }
+    </style>
+
+</head>
+
+
+<body>
 <div id="field"></div>
+<div id="players">
+    <h2>Ranking</h2>
+    <ol id="ranking"></ol>
+</div>
 
 <div id="qrcode"></div>
 
@@ -30,13 +55,21 @@
     const HOSTNAME = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
     const HOSTNAME_NO_PROTOCOL = `${url.hostname}${url.port ? `:${url.port}` : ''}`;
 
+
+    //
+    // DEV INIT
+    //
+    // const MULTIPLAYER_HOST = `ws://localhost:7001`;
+    // const socket = io(`${MULTIPLAYER_HOST}`);
+
+    //
+    // PRODUCTION INIT
+    //
     const MULTIPLAYER_HOST = `${HOSTNAME}`;
-    // const MULTIPLAYER_HOST = `ws://${HOSTNAME}:7001`;
-
-
     const socket = io(`${MULTIPLAYER_HOST}`, {
         path: "/viewersocket/socket.io",
     });
+
 
     let field = [];
     let playersMap = {};
@@ -50,13 +83,34 @@
         }
     });
 
-    socket.on('players', (data) => {
-        const playersStrings = data.split('/');
-        playersStrings.map(JSON.stringify).forEach(player => {
+    socket.on('players', (players) => {
+        playersMap = {};
+
+
+        players.forEach(player => {
             playersMap[parseInt(player.id)] = player;
         })
-    });
 
+        const ranking = document.getElementById('ranking')
+        ranking.innerHTML = '';
+
+        players
+            .sort((a, b) => {
+                return b.score - a.score;
+            })
+            .forEach(player => {
+                const li = document.createElement('li');
+                const colorSpan = document.createElement('span');
+                colorSpan.classList.add('color');
+                colorSpan.style.backgroundColor = player.color;
+                li.appendChild(colorSpan);
+                const textSpan = document.createElement('span');
+                li.appendChild(textSpan);
+                textSpan.innerText = `${player.name} - ${player.score}`;
+                ranking.appendChild(li);
+            });
+
+    });
 
 
     const CELL_SIZE = 10;
@@ -71,20 +125,23 @@
     function draw() {
         background(81);
 
-        if (Object.entries(playersMap).length > 0) {
-            for (let i = 0; i < field.length; i++) {
-                for (let j = 0; j < field[i].length; j++) {
-                    if (field[i][j] > 0) {
-                        fill(playersMap[field[i][j]].color);
-                    } else {
-                        fill(0);
-                    }
+        try {
+            if (Object.entries(playersMap).length > 0) {
+                for (let i = 0; i < field.length; i++) {
+                    for (let j = 0; j < field[i].length; j++) {
+                        if (field[i][j] > 0) {
+                            fill(playersMap[field[i][j]].color);
+                        } else {
+                            fill(0);
+                        }
 
-                    rect(i * CELL_SIZE + 2, j * CELL_SIZE + 2, 10, CELL_SIZE);
+                        rect(i * CELL_SIZE + 2, j * CELL_SIZE + 2, 10, CELL_SIZE);
+                    }
                 }
             }
+        } catch (err) {
+            console.log('failed drawing field')
         }
-
 
 
 
@@ -94,3 +151,13 @@
     new QRCode(document.getElementById("qrcode"), `${HOSTNAME}/joypad/`);
 
 </script>
+
+</body>
+
+</html>
+
+
+
+
+
+

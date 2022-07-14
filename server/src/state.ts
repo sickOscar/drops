@@ -19,6 +19,7 @@ export class Player extends Schema {
     @type("int32") development: number;
     @type("int32") milestones_reached: number;
     @type("string") color: string;
+    @type("string") avatar: string;
 }
 
 export class GameState extends Schema {

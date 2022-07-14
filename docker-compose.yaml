@@ -34,6 +34,7 @@ services:
     environment:
       - SOCKET_TO_NODE=/tmp/sockets/drops_to_node.sock
       - SOCKET_FROM_NODE=/tmp/sockets/drops_from_node.sock
+      - NODE_ENV=production
     networks:
       - drops
 
