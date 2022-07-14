@@ -56,19 +56,27 @@
 <div id="app">
 
     <div id="unauth" class="view">
-        <button class="btn btn-icon" onclick="Auth.login()"><em class="fa fa-solid fa-door-open"></em></button>
+        <button class="btn btn-icon" onclick="Auth.login()">
+            Sign in <em class="fa fa-door"></em>
+        </button>
     </div>
 
     <div id="auth" class="view">
         <header>
-            <button class="btn btn-icon" onclick="Auth.logout()"><em class="fa fa-solid fa-door-open"></em></button>
+            <button class="btn btn-icon" onclick="Auth.logout()">
+                Logout <em class="fa fa-arrow-right-from-bracket"></em>
+            </button>
         </header>
 
         <div id="intro" class="view">
 
-            <p class="center">
+            <p class="text-center mt-5">
 
-                <button id="enqueue-button">Join!</button>
+                <button class="btn btn-secondary" id="enqueue-button">
+                    <em class="fa fa-rocket"></em>
+                    Join!
+                    <em class="fa fa-rocket"></em>
+                </button>
             </p>
 
         </div>

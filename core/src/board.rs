@@ -82,8 +82,8 @@ pub fn update_board(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_SIZE], p
                         if can_conquer_opponent_cell(current_player) {
                             spend_resources_to_conquer_cell(&mut current_player);
 
-                            current_player.owned_cells = current_player.owned_cells + 1;
-                            enemy_player.owned_cells = enemy_player.owned_cells - 1;
+                            current_player.owned_cells += 1;
+                            enemy_player.owned_cells -= 1;
 
                             new_field[x_neighbor as usize][y_neighbor as usize] = cell_player_id;
                             has_conquered += 1.0;
@@ -113,7 +113,9 @@ fn can_conquer_empty_cell(player: &mut RefMut<Player>) -> bool {
 
 
 fn can_conquer_opponent_cell(current_player: &mut RefMut<Player>) -> bool {
-    current_player.resources > 0 && current_player.resources - super::RESOURCES_TO_CONQUER_FILLED_CELL > 0
+    let current_player_milestone = MILESTONES.get(current_player.milestones_reached as usize).unwrap();
+    let current_player_bonus = current_player_milestone.conquer_cost_multiplier;
+    current_player.resources > 0 && current_player.resources - (super::RESOURCES_TO_CONQUER_FILLED_CELL * current_player_bonus) > 0
 }
 
 fn has_conquered_cell(current_player: &mut RefMut<Player>, enemy_player: &mut RefMut<Player>, i: &i32, j: &i32) -> bool {
