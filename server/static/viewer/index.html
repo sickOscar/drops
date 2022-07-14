@@ -34,8 +34,8 @@
     // const MULTIPLAYER_HOST = `ws://${HOSTNAME}:7001`;
 
 
-    const socket = io(MULTIPLAYER_HOST, {
-        path: "/viewersocket/socket.io",
+    const socket = io(`${MULTIPLAYER_HOST}/viewersocket/`, {
+        path: "/viewersocket",
     });
 
     let field = [];

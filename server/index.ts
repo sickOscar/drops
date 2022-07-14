@@ -44,6 +44,7 @@ async function startViewerServer() {
     app.use(express.json());
     const server = http.createServer(app);
     const io = new SocketIoServer(server, {
+        path: "/viewersocket/socket.io",
         cors: {
             origin: "*",
             methods: ["GET", "POST"]
