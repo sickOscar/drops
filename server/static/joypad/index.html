@@ -154,8 +154,8 @@
     const HOSTNAME_NO_PROTOCOL = `${url.hostname}${url.port ? `:${url.port}` : ''}`;
     const AUTH_REDIRECT_URI = `${HOSTNAME}${url.pathname}`;
 
-    const MULTIPLAYER_HOST = `ws://localhost:7000`
-    // const MULTIPLAYER_HOST = `wss://${HOSTNAME_NO_PROTOCOL}/server`
+    // const MULTIPLAYER_HOST = `ws://localhost:7000`
+    const MULTIPLAYER_HOST = `wss://${HOSTNAME_NO_PROTOCOL}/server`
 
     window.onload = async () => {
         await Auth.configureClient()
