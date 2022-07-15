@@ -197,7 +197,7 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
     }
 
     private shouldStartNewGame() {
-        return !this.isGameRunning() && this.hasEnoughPlayers() && this.hasEnoughConnectedPlayers();
+        return !this.isGameRunning() && this.hasEnoughPlayers();
     }
 
 
