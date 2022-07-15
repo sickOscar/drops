@@ -80,16 +80,16 @@
     //
     // DEV INIT
     //
-    const MULTIPLAYER_HOST = `ws://localhost:7001`;
-    const socket = io(`${MULTIPLAYER_HOST}`);
+    // const MULTIPLAYER_HOST = `ws://localhost:7001`;
+    // const socket = io(`${MULTIPLAYER_HOST}`);
 
     //
     // PRODUCTION INIT
     //
-    // const MULTIPLAYER_HOST = `${HOSTNAME}`;
-    // const socket = io(`${MULTIPLAYER_HOST}`, {
-    //     path: "/viewersocket/socket.io",
-    // });
+    const MULTIPLAYER_HOST = `${HOSTNAME}`;
+    const socket = io(`${MULTIPLAYER_HOST}`, {
+        path: "/viewersocket/socket.io",
+    });
 
 
     let prev_field = [];
