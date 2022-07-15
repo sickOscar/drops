@@ -39,6 +39,9 @@ export class BattleRoom extends Room<GameState> {
                     // console.log(`message`, message)
 
                     if (message.startsWith("*players:")) {
+
+                        this.state.time = (parseInt(this.state.time) - 1).toString();
+
                         const playersString = message.substring("*players:".length);
                         playersString.split('/')
                             .forEach(playerString => {
@@ -69,6 +72,7 @@ export class BattleRoom extends Room<GameState> {
 
                         const playersList = Object.values(this.state.players.toJSON());
                         viewerSocket.emit('players', playersList);
+                        viewerSocket.emit('time', this.state.time);
 
                         return;
 
@@ -154,39 +158,7 @@ export class BattleRoom extends Room<GameState> {
                 client.send(this.state.players.size);
 
                 if (this.state.players.size === PLAYERS_NUM) {
-                    this.broadcast('battle_start');
-
-                    if (!this.state.gameRunning) {
-
-                        this.state.gameRunning = true;
-
-                        const colors = [
-                            '#FF0000',
-                            '#00FF00',
-                            '#0000FF',
-                            '#FFFF00',
-                            '#FF00FF',
-                            '#00FFFF',
-                            '#A047C9ED',
-                            '#1C4620FF'
-                        ];
-
-                        let index = 0;
-                        this.state.players.forEach((p, key) => {
-                            p.color = colors[index % colors.length];
-                            index++;
-                        })
-
-                        coreSendingSocket.then(socket => {
-                            const playerIds = [];
-                            this.state.players.forEach(player => {
-                                playerIds.push(player.id);
-                            })
-                            const startingString = `play:${playerIds.join('|')}`;
-                            console.log(`Starting game : ${startingString}`)
-                            socket.write(startingString);
-                        })
-                    }
+                    this.startGame();
 
                 }
 
@@ -196,6 +168,43 @@ export class BattleRoom extends Room<GameState> {
 
     }
 
+
+    private startGame() {
+        this.broadcast('battle_start');
+
+        if (!this.state.gameRunning) {
+
+            this.state.gameRunning = true;
+            this.state.time = "600"
+
+            const colors = [
+                '#FF0000',
+                '#00FF00',
+                '#0000FF',
+                '#FFFF00',
+                '#FF00FF',
+                '#00FFFF',
+                '#A047C9ED',
+                '#1C4620FF'
+            ];
+
+            let index = 0;
+            this.state.players.forEach((p, key) => {
+                p.color = colors[index % colors.length];
+                index++;
+            })
+
+            coreSendingSocket.then(socket => {
+                const playerIds = [];
+                this.state.players.forEach(player => {
+                    playerIds.push(player.id);
+                })
+                const startingString = `play:${playerIds.join('|')}`;
+                console.log(`Starting game : ${startingString}`)
+                socket.write(startingString);
+            })
+        }
+    }
 
 // Authorize client based on provided options before WebSocket handshake is complete
     onAuth(client: Client, options: any, request: http.IncomingMessage) {

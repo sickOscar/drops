@@ -14,10 +14,17 @@
             padding: 0;
         }
 
-        #qrcode {
+        #qrcode-right {
             display: block;
             position: absolute;
             right: 0;
+            bottom: 0;
+        }
+
+        #qrcode-left {
+            display: block;
+            position: absolute;
+            left: 0;
             bottom: 0;
         }
 
@@ -36,6 +43,13 @@
             height: 20px;
             width: 20px;
         }
+
+        #time-container {
+            font-size: 100px
+        }
+        #time-container small {
+            font-size: 50px
+        }
     </style>
 
 </head>
@@ -46,9 +60,16 @@
 <div id="players">
     <h2>Ranking</h2>
     <ol id="ranking"></ol>
+    <div id="time-container">
+        <h3>Time left</h3>
+        <span id="time-missing"></span>
+        <small>/600</small>
+    </div>
+
 </div>
 
-<div id="qrcode"></div>
+<div id="qrcode-right"></div>
+<div id="qrcode-left"></div>
 
 <script>
     const url = new URL(window.location.href);
@@ -59,28 +80,43 @@
     //
     // DEV INIT
     //
-    // const MULTIPLAYER_HOST = `ws://localhost:7001`;
-    // const socket = io(`${MULTIPLAYER_HOST}`);
+    const MULTIPLAYER_HOST = `ws://localhost:7001`;
+    const socket = io(`${MULTIPLAYER_HOST}`);
 
     //
     // PRODUCTION INIT
     //
-    const MULTIPLAYER_HOST = `${HOSTNAME}`;
-    const socket = io(`${MULTIPLAYER_HOST}`, {
-        path: "/viewersocket/socket.io",
-    });
+    // const MULTIPLAYER_HOST = `${HOSTNAME}`;
+    // const socket = io(`${MULTIPLAYER_HOST}`, {
+    //     path: "/viewersocket/socket.io",
+    // });
 
 
+    let prev_field = [];
     let field = [];
     let playersMap = {};
+    let round = 0;
+
+
+    const UI = {
+        ranking: document.getElementById('ranking'),
+        timeMissing: document.getElementById('time-missing'),
+    };
 
 
     socket.on('field', (data) => {
         try {
+
+            prev_field = JSON.parse(JSON.stringify(field));
+
             field = JSON.parse(data);
         } catch (err) {
             console.log('failed parsing data')
         }
+    });
+
+    socket.on('time', (time) => {
+        UI.timeMissing.innerText = `${time}`;
     });
 
     socket.on('players', (players) => {
@@ -113,29 +149,46 @@
     });
 
 
-    const CELL_SIZE = 10;
-
+    const CELL_SIZE = 9;
+    const BOARD_SIZE = 100;
 
     function setup() {
         background(81)
-        const canvas = createCanvas(600, 600);
+        const canvas = createCanvas(BOARD_SIZE * (CELL_SIZE), BOARD_SIZE * (CELL_SIZE));
         canvas.parent('field');
+        frameRate(10);
     }
 
     function draw() {
         background(81);
 
+
+
+
         try {
+
+            // noStroke()
+
             if (Object.entries(playersMap).length > 0) {
                 for (let i = 0; i < field.length; i++) {
                     for (let j = 0; j < field[i].length; j++) {
+
+                        // if (prev_field[i][j] !== field[i][j]) {
+                        //
+                        //     stroke('white');
+                        //
+                        // } else {
+                        //     stroke(81)
+                        // }
+
+
                         if (field[i][j] > 0) {
                             fill(playersMap[field[i][j]].color);
                         } else {
                             fill(0);
                         }
 
-                        rect(i * CELL_SIZE + 2, j * CELL_SIZE + 2, 10, CELL_SIZE);
+                        rect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                     }
                 }
             }
@@ -148,7 +201,8 @@
     }
 
 
-    new QRCode(document.getElementById("qrcode"), `${HOSTNAME}/joypad/`);
+    new QRCode(document.getElementById("qrcode-right"), `${HOSTNAME}/joypad/`);
+    new QRCode(document.getElementById("qrcode-left"), `${HOSTNAME}/joypad/`);
 
 </script>
 
