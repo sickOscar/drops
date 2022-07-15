@@ -67,7 +67,7 @@
         }
         .range-input-value {
             display: block;
-            width: 80px;
+            width:  100px;
             text-align: right;
         }
         #recap-box {
@@ -553,8 +553,9 @@
                     UI.resourcesBox.innerText = `${me.resources || 0}`;
                     UI.scoreBox.innerHTML = `${me.score || 0}`;
                     UI.developmentBox.innerHTML = `${me.development || 0}`;
-                    UI.developmentProgress.style.width = `${me.development || 0}%`;
                     UI.milestoneBox.innerHTML = `${me.milestones_reached || 0}`;
+                    UI.developmentProgress.style.width = (me.milestones_reached == 9) ? `100%` : `${me.development || 0}%`;
+
                 }
 
             })
