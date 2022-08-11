@@ -15,9 +15,9 @@ cargo run
 ```
 
 
-
-## Joypad frontend test
+**NOTE**: use one of the latest node version, like 18.x
+## Frontend
 ```
-cd server
-npm run joy
+cd frontend
+npm run dev
 ```
