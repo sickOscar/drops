@@ -18,11 +18,11 @@ const BattleLayout = () => {
 
   return (
     <>
-      <div class={"flex justify-between items-center h-[2.5em] mb-10"}>
+      <header class={"flex justify-between items-center h-[2.5em] mb-10"}>
         <span class={"text-white text-xl"}>Ciao {useAuth?.user?.name}</span>
-        <img src={logo} class={"h-full object-contain"} alt=""/>
-        {/*<button class={"hidden"} onClick={() => authDispatch?.logout()}>logout</button>*/}
-      </div>
+        <img src={logo} class={"h-full object-cover"} alt=""/>
+        {/*<button onClick={() => authDispatch?.logout()}>logout</button>*/}
+      </header>
       <Outlet></Outlet>
     </>
   )

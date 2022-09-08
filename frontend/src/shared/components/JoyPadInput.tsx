@@ -20,22 +20,21 @@ const JoyPadInput = (props: JoyPadInputProps) => {
 
   return (
     <div class={"joyPadInput flex flex-col flex-1 items-center text-center relative"}>
-      <label class="text-grey text-xl" for={props.type}>{props.label}</label>
-      <div class={"joyPadInput__range-container flex flex-col border-1 rounded-[45px] bg-semitransparent-grey mx-auto w-[6rem] h-[40vh] p-5 mt-3 relative justify-between"}>
-        <span class={"text-white mx-auto"} innerHTML={props.labelFormula(props.value)}></span>
-        <div class={"flex-1 flex justify-center items-center"}>
-          <input onInput={(e: any) => props.onInput(parseInt(e.target.value, 10), props.type)}
-             onChange={props.onChange}
-             type="range"
-             min={0}
-             max={100}
-             id={props.type}
-             value={props.value}
-             step={1}
-             disabled={props.isDisabled}
-          />
-        </div>
-        <button class={"h-[80px] flex items-center justify-center"} onClick={(e: any) => props.onLock(props.type)}>
+      <label class="text-grey break-words" for={props.type}>{props.label}</label>
+      <div class={"joyPadInput__range-container flex flex-col border-1 rounded-[45px] bg-semitransparent-grey mx-auto w-[6rem] h-[35vh] p-4 mt-3 relative justify-between items-center main-shadow"}>
+        <span class={"text-white top-4"} innerHTML={props.labelFormula(props.value)}></span>
+        <input onInput={(e: any) => props.onInput(parseInt(e.target.value, 10), props.type)}
+           onChange={props.onChange}
+           type="range"
+           min={0}
+           max={100}
+           id={props.type}
+           value={props.value}
+           step={1}
+           disabled={props.isDisabled}
+           class={"max-w-[16vh] sm:max-w-max mb-[-1.5em]"}
+        />
+        <button class={"h-[80px] w-[80px] flex items-center justify-center mb-[-1em]"} onClick={(e: any) => props.onLock(props.type)}>
           {lockIcon()}
         </button>
       </div>

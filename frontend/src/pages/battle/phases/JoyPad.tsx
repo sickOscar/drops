@@ -6,6 +6,7 @@ import JoyPadInput from "../../../shared/components/JoyPadInput";
 import {valueBetweenMinAndMax} from "../../../shared/helpers";
 import Splash from "../../../shared/icons/Splash";
 import LevelUp from "../../../shared/components/LevelUp";
+import Info from "../../../shared/icons/Info";
 
 interface SliderState {
   military: ResourceType
@@ -104,25 +105,25 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
   }
 
   return (
-    <>
+    <div class={"flex flex-col flex-1"}>
       <div class={"flex"}>
         <div class={"flex-1 flex flex-col items-center text-white"}>
-          <span class={"text-xl text-grey"}>Colore</span>
+          <span class={"text-xl text-grey mb-3"}>Colore</span>
           <Splash color={playerStats.color}/>
         </div>
         <div class={"flex-1 flex flex-col items-center text-white"}>
-          <span class={"text-xl text-grey"}>Bombolette</span>
+          <span class={"text-xl text-grey mb-3"}>Bombolette</span>
           <span class={"text-3xl"}>{playerStats.resources}</span>
         </div>
         <div class={"flex-1 flex flex-col items-center text-white"}>
-          <span class={"text-xl text-grey"}>Mattoni</span>
+          <span class={"text-xl text-grey mb-3"}>Mattoni</span>
           <span class={"text-3xl"}>{playerStats.score}</span>
         </div>
       </div>
       <p class={"mt-5 mb-2 text-white text-xl"}>
         Livello {playerStats.milestones_reached + 1}: {LEVELS[playerStats.milestones_reached + 1]}
       </p>
-      <div class={"flex gap-2"}>
+      <div class={"flex gap-1"}>
         <For each={[...Array(10).keys()]}>
           {(item, index) =>
             <div class={"flex-1"}>
@@ -132,51 +133,57 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
         </For>
       </div>
 
-      <input class={"my-5"} type="range" min={0} max={100} value={playerStats.milestones_reached === 9 ? 100 : playerStats.development} disabled/>
+      <div class={"joyPad__slider-container main-shadow mt-auto pt-5 pb-10 mt-auto mx-[-1rem] mb-[-1rem] rounded-tr-[30px] rounded-tl-[30px] border-1 bor"}>
 
-      <div class={"flex gap-2 items-end"}>
-        <JoyPadInput
-          value={joyPadStore.research.value}
-          type={SLIDER_TYPE.RESEARCH}
-          max={100}
-          min={0}
-          label={"Impara l'arte!"}
-          isDisabled={isInputDisabled(SLIDER_TYPE.RESEARCH)}
-          onChange={handleSliderChange}
-          onInput={handleSliderInput}
-          onLock={triggerLock}
-          labelFormula={(value) => (`${((value / 100) * DEVELOPMENT_AT_END_ROUND).toFixed(1)}<br>/turn`)}
-        />
+        <div class={"flex justify-between items-center px-5 mb-8"}>
+          <span class={"text-white games-control-label"}>Controlli di gioco</span>
+          <button class={"flex items-center rounded-[50px] bg-uber-semitransparent-acquamarine py-2 px-3 text-white"}><Info/>&nbsp;Instruzioni</button>
+        </div>
 
-        <JoyPadInput
-          value={joyPadStore.production.value}
-          type={SLIDER_TYPE.PRODUCTION}
-          max={100}
-          min={0}
-          label={"Raccogli bombolette"}
-          isDisabled={isInputDisabled(SLIDER_TYPE.PRODUCTION)}
-          onChange={handleSliderChange}
-          onInput={handleSliderInput}
-          onLock={triggerLock}
-          labelFormula={(value) => (`${((value / 100) * RESOURCES_AT_END_ROUND).toFixed(1)}<br>/turn`)}
-        />
+        <div class={"flex justify-between items-end px-1"}>
+          <JoyPadInput
+            value={joyPadStore.research.value}
+            type={SLIDER_TYPE.RESEARCH}
+            max={100}
+            min={0}
+            label={"Velocità di apprendimento"}
+            isDisabled={isInputDisabled(SLIDER_TYPE.RESEARCH)}
+            onChange={handleSliderChange}
+            onInput={handleSliderInput}
+            onLock={triggerLock}
+            labelFormula={(value) => (`${((value / 100) * DEVELOPMENT_AT_END_ROUND).toFixed(1)}<br>/turn`)}
+          />
 
-        <JoyPadInput
-          value={joyPadStore.military.value}
-          type={SLIDER_TYPE.MILITARY}
-          max={100}
-          min={0}
-          label={"Spruzza!"}
-          isDisabled={isInputDisabled(SLIDER_TYPE.MILITARY)}
-          onChange={handleSliderChange}
-          onInput={handleSliderInput}
-          onLock={triggerLock}
-          labelFormula={(value) => (`${Math.ceil(value)}<br>&nbsp;`)}
-        />
+          <JoyPadInput
+            value={joyPadStore.production.value}
+            type={SLIDER_TYPE.PRODUCTION}
+            max={100}
+            min={0}
+            label={"Capacità di raccolta"}
+            isDisabled={isInputDisabled(SLIDER_TYPE.PRODUCTION)}
+            onChange={handleSliderChange}
+            onInput={handleSliderInput}
+            onLock={triggerLock}
+            labelFormula={(value) => (`${((value / 100) * RESOURCES_AT_END_ROUND).toFixed(1)}<br>/turn`)}
+          />
+
+          <JoyPadInput
+            value={joyPadStore.military.value}
+            type={SLIDER_TYPE.MILITARY}
+            max={100}
+            min={0}
+            label={"Potenza spruzzo"}
+            isDisabled={isInputDisabled(SLIDER_TYPE.MILITARY)}
+            onChange={handleSliderChange}
+            onInput={handleSliderInput}
+            onLock={triggerLock}
+            labelFormula={(value) => (`${Math.ceil(value)}<br>&nbsp;`)}
+          />
+        </div>
       </div>
 
       <LevelUp show={showLevelUp()}/>
-    </>
+    </div>
   )
 }
 

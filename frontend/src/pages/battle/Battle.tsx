@@ -44,7 +44,7 @@ const Battle = () => {
       {
         isInQueue() && (
           <>
-            {isLoadingRelayRoom() && <span>Joining room...</span>}
+            {isLoadingRelayRoom() && <span class={"text-white text-xl"}>Joining room...</span>}
             {!isLoadingRelayRoom() && gameState?.errors.relayRoom && <span>Error joining relay room, please try again refreshing the page</span>}
             {!isLoadingRelayRoom() && !gameState?.errors.relayRoom && (gameState?.relayQueue.length || 0) > 0 && <Queue players={gameState?.relayQueue}/>}
           </>
@@ -53,7 +53,7 @@ const Battle = () => {
       {
         isInGame() && (
           <>
-            {isLoadingBattleRoom() && <span>Joining battle...</span>}
+            {isLoadingBattleRoom() && <span class={"text-white text-xl"}>Joining battle...</span>}
             {!isLoadingBattleRoom() && gameState?.errors.battleRoom && <span>Error joining battle room, please try again refreshing the page</span>}
             {!isLoadingBattleRoom() && !gameState?.errors.battleRoom && gameState?.currentPlayerStats !== null && <JoyPad onChange={handleSliderChange} playerStats={gameState?.currentPlayerStats as BattleInfoCurrentPlayer}/>}
           </>
