@@ -78,12 +78,13 @@ const AuthProvider = (props: AuthProviderProps) => {
   }
 
   async function login() {
-    console.log("[AUTH] init login flow")
+    console.log("[AUTH] init login flow");
 
-    await authClient()?.loginWithPopup();
-    await checkLoginStatus();
+    await authClient()?.loginWithRedirect({
+      redirect_uri: AUTH_REDIRECT_URI
+    });
 
-    console.log("[AUTH] finished login flow")
+    console.log("[AUTH] finished login flow");
   }
 
   async function logout() {
@@ -113,6 +114,7 @@ const AuthProvider = (props: AuthProviderProps) => {
 
   async function handleRedirectCallback() {
     await authClient()?.handleRedirectCallback();
+    await checkLoginStatus();
     navigate("/battle", {replace: true});
   }
 

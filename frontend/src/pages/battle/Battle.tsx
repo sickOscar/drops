@@ -36,7 +36,7 @@ const Battle = () => {
       {
         isInIntro() && (
           <Intro
-            user={useAuth!.user as User}
+            user={useAuth?.user as User}
             onJoin={handleUserJoin}
           />
         )
