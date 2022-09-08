@@ -1,8 +1,11 @@
 import {createStore} from "solid-js/store";
-import {DEVELOPMENT_AT_END_ROUND, RESOURCES_AT_END_ROUND, SLIDER_TYPE} from "../../../shared/constants";
-import {createMemo, onMount} from "solid-js";
+import {DEVELOPMENT_AT_END_ROUND, LEVELS, RESOURCES_AT_END_ROUND, SLIDER_TYPE} from "../../../shared/constants";
+import {createEffect, createMemo, createSignal, For, onMount} from "solid-js";
 import {BattleInfoCurrentPlayer} from "../../../models/user";
-import JoyPadInput from "./JoyPadInput";
+import JoyPadInput from "../../../shared/components/JoyPadInput";
+import {valueBetweenMinAndMax} from "../../../shared/helpers";
+import Splash from "../../../shared/icons/Splash";
+import LevelUp from "../../../shared/components/LevelUp";
 
 interface SliderState {
   military: ResourceType
@@ -37,6 +40,7 @@ interface JoyPadProps {
 
 const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
   const [joyPadStore, setJoyPadStore] = createStore<SliderState>(initialState);
+  const [showLevelUp, setShowLevelUp] = createSignal<boolean>(false);
   const MIN = 0;
   const MAX = 100;
 
@@ -45,6 +49,16 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
     setJoyPadStore("production", "value", 33);
     setJoyPadStore("research", "value", 33);
   });
+
+  createEffect(() => {
+    if (playerStats.milestones_reached > 0) {
+      setShowLevelUp(true);
+
+      setTimeout(() => {
+        setShowLevelUp(false)
+      }, 700);
+    }
+  })
 
   const handleSliderInput = (value: number, type: SLIDER_TYPE) => {
 
@@ -60,23 +74,11 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
       for (let sliderType in SLIDER_TYPE) {
         if (type !== sliderType && !joyPadStore[sliderType.toLowerCase() as SLIDER_TYPE].disabled) {
           setJoyPadStore(sliderType.toLowerCase() as SLIDER_TYPE,(oldValue) => {
-            return { value: valueBetweenMinAndMax(oldValue.value - ((sum - maxTotal) / (2 - blocked))) };
+            return { value: valueBetweenMinAndMax(oldValue.value - ((sum - maxTotal) / (2 - blocked)), MIN, MAX) };
           });
         }
       }
     }
-  }
-
-  const valueBetweenMinAndMax = (value: number) => {
-    if (value > MAX) {
-      return MAX
-    }
-
-    if (value < MIN) {
-      return MIN;
-    }
-
-    return value;
   }
 
   const getTotal = createMemo(() => {
@@ -91,10 +93,6 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
     });
   }
 
-  const lockIcon = (type: SLIDER_TYPE) => {
-    return joyPadStore[type.toLowerCase() as SLIDER_TYPE].disabled ? "fa fa-lock" : "fa fa-lock-open";
-  }
-
   const triggerLock = (type: SLIDER_TYPE) => {
     setJoyPadStore(type.toLowerCase() as SLIDER_TYPE, (oldValue) => {
       return { disabled: !oldValue.disabled };
@@ -107,29 +105,47 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
 
   return (
     <>
-      <div class={"w-100 h-[100px]"} style={{"background-color": playerStats.color}}></div>
-      <p>
-        resources: {playerStats.resources}
+      <div class={"flex"}>
+        <div class={"flex-1 flex flex-col items-center text-white"}>
+          <span class={"text-xl text-grey"}>Colore</span>
+          <Splash color={playerStats.color}/>
+        </div>
+        <div class={"flex-1 flex flex-col items-center text-white"}>
+          <span class={"text-xl text-grey"}>Bombolette</span>
+          <span class={"text-3xl"}>{playerStats.resources}</span>
+        </div>
+        <div class={"flex-1 flex flex-col items-center text-white"}>
+          <span class={"text-xl text-grey"}>Mattoni</span>
+          <span class={"text-3xl"}>{playerStats.score}</span>
+        </div>
+      </div>
+      <p class={"mt-5 mb-2 text-white text-xl"}>
+        Livello {playerStats.milestones_reached + 1}: {LEVELS[playerStats.milestones_reached + 1]}
       </p>
-      <p>
-        cells: {playerStats.score}
-      </p>
-      <p>
-        level: {playerStats.milestones_reached}
-      </p>
-      <input type="range" min={0} max={100} value={playerStats.milestones_reached === 9 ? 100 : playerStats.development} disabled/>
-      <div class={"flex flex-col"}>
+      <div class={"flex gap-2"}>
+        <For each={[...Array(10).keys()]}>
+          {(item, index) =>
+            <div class={"flex-1"}>
+              <Splash color={index() < playerStats.milestones_reached + 1 ? "#F2C94C" : "#FFFFFF"}/>
+            </div>
+          }
+        </For>
+      </div>
+
+      <input class={"my-5"} type="range" min={0} max={100} value={playerStats.milestones_reached === 9 ? 100 : playerStats.development} disabled/>
+
+      <div class={"flex gap-2 items-end"}>
         <JoyPadInput
-          value={joyPadStore.military.value}
-          type={SLIDER_TYPE.MILITARY}
+          value={joyPadStore.research.value}
+          type={SLIDER_TYPE.RESEARCH}
           max={100}
           min={0}
-          label={"Military"}
-          isDisabled={isInputDisabled(SLIDER_TYPE.MILITARY)}
+          label={"Impara l'arte!"}
+          isDisabled={isInputDisabled(SLIDER_TYPE.RESEARCH)}
           onChange={handleSliderChange}
           onInput={handleSliderInput}
           onLock={triggerLock}
-          labelFormula={(value) => (`${Math.ceil(value)}`)}
+          labelFormula={(value) => (`${((value / 100) * DEVELOPMENT_AT_END_ROUND).toFixed(1)}<br>/turn`)}
         />
 
         <JoyPadInput
@@ -137,27 +153,29 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
           type={SLIDER_TYPE.PRODUCTION}
           max={100}
           min={0}
-          label={"Production"}
+          label={"Raccogli bombolette"}
           isDisabled={isInputDisabled(SLIDER_TYPE.PRODUCTION)}
           onChange={handleSliderChange}
           onInput={handleSliderInput}
           onLock={triggerLock}
-          labelFormula={(value) => (`${((value / 100) * RESOURCES_AT_END_ROUND).toFixed(1)}/turn`)}
+          labelFormula={(value) => (`${((value / 100) * RESOURCES_AT_END_ROUND).toFixed(1)}<br>/turn`)}
         />
 
         <JoyPadInput
-          value={joyPadStore.research.value}
-          type={SLIDER_TYPE.RESEARCH}
+          value={joyPadStore.military.value}
+          type={SLIDER_TYPE.MILITARY}
           max={100}
           min={0}
-          label={"Research"}
-          isDisabled={isInputDisabled(SLIDER_TYPE.RESEARCH)}
+          label={"Spruzza!"}
+          isDisabled={isInputDisabled(SLIDER_TYPE.MILITARY)}
           onChange={handleSliderChange}
           onInput={handleSliderInput}
           onLock={triggerLock}
-          labelFormula={(value) => (`${((value / 100) * DEVELOPMENT_AT_END_ROUND).toFixed(1)}/turn`)}
+          labelFormula={(value) => (`${Math.ceil(value)}<br>&nbsp;`)}
         />
       </div>
+
+      <LevelUp show={showLevelUp()}/>
     </>
   )
 }

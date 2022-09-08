@@ -15,9 +15,10 @@ cargo run
 ```
 
 
-**NOTE**: use one of the latest node version, like 18.x
 ## Frontend
 ```
 cd frontend
 npm run dev
 ```
+
+**NOTE**: use one of the latest node version, like 18.x

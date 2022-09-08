@@ -1,8 +1,12 @@
+import {useAuthState} from "../../../shared/context/auth.context";
+
 interface QueueProps {
   players?: string[]
 }
 
-const Queue = ({players}: QueueProps) => {
+const Queue = (props: QueueProps) => {
+  const auth = useAuthState();
+
   const detail = (player: string) => {
     const name = player.split('|')[0];
     const connected = player.split('|')[1] === "true";
@@ -17,18 +21,17 @@ const Queue = ({players}: QueueProps) => {
 
   return (
     <>
-      <h1>WAITING FOR OTHER PLAYERS...</h1>
-      <h2>People waiting to play:</h2>
-      <ol>
+      <h1 class={"text-white text-xl"}>Giocatori in coda</h1>
+      <ul>
         {
-          players?.map(detail).map(player => (
-            <li class={`${!player.connected ? "disconnected" : undefined} flex my-5`}>
-              <img src={player.avatar} alt="" class={"w-[50px] h-[50px] mr-5"}/>
-              {player.name}
+          props.players?.map(detail).map(player => (
+            <li class={`${!player.connected ? "disconnected" : undefined} flex my-5 items-center ${player.name === auth?.user?.name ? "bg-semitransparent-acquamarine" : "bg-semitransparent-grey"} rounded-[45px] p-1`}>
+              <img src={player.avatar} alt="" class={"w-[50px] h-[50px] mr-5 rounded-full border-2 border-black"}/>
+              <span class={"text-white"}>{player.name}</span>
             </li>
           ))
         }
-      </ol>
+      </ul>
     </>
   )
 }

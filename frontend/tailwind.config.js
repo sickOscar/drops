@@ -5,7 +5,12 @@ module.exports = {
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        "semitransparent-grey": "rgb(152, 150, 165, 0.3)",
+        "semitransparent-acquamarine": "rgb(78, 195, 203, 0.6)"
+      }
+    },
   },
   plugins: [],
 }
