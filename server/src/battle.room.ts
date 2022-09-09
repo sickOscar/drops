@@ -122,7 +122,7 @@ export class BattleRoom extends Room<GameState> {
         this.onMessage("identity", (client, data) => {
 
             const [sub, name, avatar] = data.split("#");
-            console.log(`got player identity`, sub, name, avatar);
+            console.log(`BATTLE: got player identity`, sub, name, avatar);
 
             let existingPlayer:Player;
             this.state.players.forEach((p, key) => {
@@ -156,9 +156,8 @@ export class BattleRoom extends Room<GameState> {
 
                 client.send(this.state.players.size);
 
-                if (this.state.players.size === Globals.MIN_PLAYERS_NUMBER) {
+                if (this.state.players.size === Globals.playersForThisGame) {
                     this.startGame();
-
                 }
 
             }

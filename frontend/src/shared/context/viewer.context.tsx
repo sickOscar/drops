@@ -12,7 +12,9 @@ interface ViewerStateContext  {
   field: number[][],
   playersMap: {[key: string | number]: BattleInfoCurrentPlayer} | undefined,
   round: number,
-  remainingTime: number
+  remainingTime: number,
+  playersInQueue: string[],
+  timeToStart: number
 }
 
 interface ViewerProviderProps {
@@ -28,7 +30,9 @@ const initialState: ViewerStateContext = {
   field: [],
   playersMap: {},
   round: 0,
-  remainingTime: 0
+  remainingTime: 0,
+  playersInQueue: [],
+  timeToStart: 0
 }
 
 const ViewerLoader = () => {
@@ -94,6 +98,10 @@ const ViewerProvider = (props: ViewerProviderProps) => {
 
     store.socket?.on(VIEWER_SOCKETS.TIME, (time) => {
       setStore("remainingTime", Number(time));
+    });
+
+    store.socket?.on(VIEWER_SOCKETS.TIME_TO_START, (time) => {
+      setStore("timeToStart", Number(time));
     });
   }
 

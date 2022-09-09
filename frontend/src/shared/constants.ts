@@ -12,7 +12,8 @@ const RESOURCES_AT_END_ROUND = 50;
 const RELAY_ROOM = {
   QUEUE: "queue",
   IDENTITY: "identity",
-  BATTLE_READY: "battle_ready"
+  BATTLE_READY: "battle_ready",
+  TIMER: "timer"
 };
 
 const BATTLE_ROOM = {
@@ -25,7 +26,8 @@ const BATTLE_ROOM = {
 const VIEWER_SOCKETS = {
   FIELD: "field",
   TIME: "time",
-  PLAYERS: "players"
+  PLAYERS: "players",
+  TIME_TO_START: "timer",
 }
 
 const LOCALSTORAGE = {

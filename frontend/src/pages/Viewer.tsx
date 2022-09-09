@@ -9,65 +9,70 @@ const Viewer = () => {
   const [p5Instance, setP5Instance] = createSignal<p5 | null>(null);
   let canvas;
 
+
   const sketch = (p: p5) => {
 
     const sqrtSide = Math.sqrt(2);
 
     p.setup = function () {
-      const canvas = p.createCanvas(BOARD_SIZE * (CELL_SIZE), BOARD_SIZE * (CELL_SIZE));
+      canvas = p.createCanvas(BOARD_SIZE * (CELL_SIZE), BOARD_SIZE * (CELL_SIZE));
       canvas.parent("field")
       p.frameRate(20);
-
-
 
     }
 
     p.draw = function () {
-      p.background(128);
+      try {
+        // p.background('rgba(0,0,0,0)');
+        p.clear(0, 0, 0, 0.5);
 
-      const brickWidth = 8;
-      const brickHeight = 4;
+        const brickWidth = 8;
+        const brickHeight = 4;
 
-      for (let i = 0; i < BOARD_SIZE; i++) {
-        for (let j = 0; j < BOARD_SIZE; j++) {
-          p.stroke(255);
-          p.noFill();
+        for (let i = 0; i < BOARD_SIZE; i++) {
+          for (let j = 0; j < BOARD_SIZE; j++) {
+            p.stroke(255);
+            p.noFill();
 
-          if (j % (brickHeight * 2) === 0) {
-            if (i % (brickWidth) === 0) {
-              p.rect(
-                i * CELL_SIZE,
-                j * CELL_SIZE,
-                CELL_SIZE * brickWidth,
-                CELL_SIZE * brickHeight
-              );
+            if (j % (brickHeight * 2) === 0) {
+              if (i % (brickWidth) === 0) {
+                p.rect(
+                    i * CELL_SIZE,
+                    j * CELL_SIZE,
+                    CELL_SIZE * brickWidth,
+                    CELL_SIZE * brickHeight
+                );
+              }
             }
-          }
 
-          if (j % (brickHeight * 2) === brickHeight) {
-            if (i % (brickWidth) === brickWidth / 2) {
-              p.rect(
-                i * CELL_SIZE,
-                j * CELL_SIZE,
-                CELL_SIZE * brickWidth,
-                CELL_SIZE * brickHeight
-              );
+            if (j % (brickHeight * 2) === brickHeight) {
+              if (i % (brickWidth) === brickWidth / 2) {
+                p.rect(
+                    i * CELL_SIZE,
+                    j * CELL_SIZE,
+                    CELL_SIZE * brickWidth,
+                    CELL_SIZE * brickHeight
+                );
+              }
             }
-          }
 
+          }
         }
-      }
 
-      p.noStroke();
-      const perlinMultiplier = 0.1;
+        p.noStroke();
+        const perlinMultiplier = 0.1;
 
-      if (viewerState && viewerState?.playersMap && Object.entries(viewerState?.playersMap).length > 0) {
-        for (let i = 0; i < viewerState?.field.length; i++) {
-          for (let j = 0; j < viewerState?.field[i].length; j++) {
+        if (!viewerState || !viewerState.playersMap || Object.entries(viewerState?.playersMap).length === 0) {
+          return;
+        }
+
+        for (let i = 0; i < viewerState.field.length; i++) {
+          for (let j = 0; j < viewerState.field[i].length; j++) {
 
 
-            if (viewerState?.field[i][j] > 0) {
-              const c = p.color(viewerState?.playersMap[viewerState?.field[i][j]].color);
+            if (viewerState.field[i][j] > 0) {
+              
+              const c = p.color(viewerState.playersMap[viewerState?.field[i][j]].color);
 
               const perlin = p.noise(i * perlinMultiplier, j * perlinMultiplier);
 
@@ -79,16 +84,20 @@ const Viewer = () => {
               p.circle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE * sqrtSide * rayPerlin);
 
 
-
             } else {
               p.fill(128);
             }
 
           }
         }
+
+      } catch (err) {
+        // un catch per domarli tutti
+        // l'applicazione non deve crashare perchè non voglio andare a fare F5 sul pc
+        // durante il contest
+        console.error(err);
       }
 
-      // p.filter(p.DILATE);
     }
   }
 
@@ -105,9 +114,15 @@ const Viewer = () => {
 
   return (
     <>
+      {
+        viewerState?.timeToStart > 0 &&
+        <div>
+          <h1>Game will start in {viewerState?.timeToStart / 1000} seconds</h1>
+        </div>
+      }
       <div class={"flex flex-row"}>
         <div id={"field"} ref={canvas}></div>
-        <div>
+        <div class={"text-white"}>
           <h2>Ranking</h2>
           <ol>
             {

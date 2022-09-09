@@ -57,11 +57,13 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
         player = this.handlePlayerReconnection(player, client);
 
         if (this.playerShouldEnterBattleOnConnect(player)) {
+
           this.sendPlayerToBattle(client);
+
         } else {
           this.putPlayerInWaitingList(player);
 
-          if (this.hasEnoughConnectedPlayers()) {
+          if (!this.isGameRunning() && this.hasEnoughConnectedPlayers()) {
             this.startGameTimer();
             this.startBroadcastTimer();
           }
@@ -73,7 +75,7 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
         this.handleNewPlayerJoining(player);
         this.putPlayerInWaitingList(player);
 
-        if (this.hasEnoughConnectedPlayers()) {
+        if (!this.isGameRunning() && this.hasEnoughConnectedPlayers()) {
           this.startGameTimer();
           this.startBroadcastTimer();
         }
@@ -101,6 +103,14 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
       this.waitingListMissingTime -= 1000;
       console.log('Broadcasting waiting list timer', this.waitingListMissingTime);
       this.broadcast('timer', this.waitingListMissingTime);
+
+      const viewerSocket = Globals.viewerSocket;
+      if (!viewerSocket) {
+        return;
+      }
+
+      viewerSocket.emit('timer', this.waitingListMissingTime);
+
     }, 1000);
   }
 
@@ -146,7 +156,9 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
     if (this.waitingListTimeout) {
       console.log('Clearing waiting list timeout');
       clearTimeout(this.waitingListTimeout);
+      clearInterval(this.waitingListTimer);
     }
+
     console.log('Starting new waiting list timeout');
     this.waitingListTimeout = setTimeout(() => {
       if (this.shouldStartNewGame()) {
@@ -154,7 +166,7 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
       } else {
         this.startGameTimer();
       }
-    }, Globals.GAME_WAITING_TIME);
+    }, Globals.GAME_WAITING_TIME + 500);
 
   }
 
@@ -172,22 +184,28 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
     console.log(`players`, waiting.map(p => p.name));
 
     const newWaitingPlayersQueue = new Queue<Player>();
-    let addedPlayers = 0;
+    // let addedPlayers = 0;
 
-    for (let i = 0; i < Globals.MIN_PLAYERS_NUMBER; i++) {
+    Globals.playersForThisGame = Math.min(Globals.MAX_PLAYERS_NUMBER, waiting.length);
+
+    for (let i = 0; i < waiting.length; i++) {
 
       const player = waiting[i];
 
-      if (player.connected) {
+      if (!player) {
+        continue;
+      }
+
+      if (i < Globals.MAX_PLAYERS_NUMBER) {
         this.playingPlayers.add(player.sub);
 
         const involvedClient = this.clients.find(client => client.sessionId === player.sessionId)
         involvedClient.send("battle_ready");
 
-        addedPlayers++;
-        if (addedPlayers === Globals.MIN_PLAYERS_NUMBER) {
-          break;
-        }
+        // addedPlayers++;
+        // if (addedPlayers === Globals.MAX_PLAYERS_NUMBER) {
+        //   break;
+        // }
       } else {
         newWaitingPlayersQueue.enqueue(player);
       }
@@ -254,7 +272,7 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
   }
 
   private hasEnoughConnectedPlayers() {
-    return this.waitingPlayers.toArray().filter(p => p.connected).length === Globals.MIN_PLAYERS_NUMBER;
+    return this.waitingPlayers.toArray().filter(p => p.connected).length >= Globals.MIN_PLAYERS_NUMBER;
   }
 
   onDispose() {

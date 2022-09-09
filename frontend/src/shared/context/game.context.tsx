@@ -26,6 +26,7 @@ interface GameStateContext {
   battleRoom: Room | null,
   relayRoom: Room | null,
   relayQueue: string[],
+  relayTimer: number,
   bootstrapped: boolean,
   ui: UI,
   currentPlayerStats: BattleInfoCurrentPlayer | null,
@@ -52,6 +53,7 @@ const initialState: GameStateContext = {
   battleRoom: null,
   relayQueue: [],
   relayRoom: null,
+  relayTimer: 0,
   bootstrapped: false,
   ui: "intro",
   currentPlayerStats: null,
@@ -160,6 +162,11 @@ const GameProvider = (props: GameProviderProps) => {
 
       store.relayRoom?.onMessage(RELAY_ROOM.QUEUE, (queue: any) => {
         setStore("relayQueue",(prev) => [...queue]);
+      });
+
+      store.relayRoom?.onMessage(RELAY_ROOM.TIMER, (timer: any) => {
+        console.log("timer", timer);
+        setStore("relayTimer", timer)
       });
     }
   }
