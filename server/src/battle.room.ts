@@ -1,10 +1,9 @@
 import http from "http";
 import {Client, Room} from "colyseus";
-import {Field, FieldCol, GameState, Player} from "./state";
+import {GameState, Player} from "./state";
 import {Globals} from "./global";
 import {coreListeningSocket, coreSendingSocket} from "./ipc_sockets";
 import {restoreTruncatedMessage} from "./message-handling";
-import {PLAYERS_NUM} from "./const";
 
 
 export class BattleRoom extends Room<GameState> {
@@ -157,7 +156,7 @@ export class BattleRoom extends Room<GameState> {
 
                 client.send(this.state.players.size);
 
-                if (this.state.players.size === PLAYERS_NUM) {
+                if (this.state.players.size === Globals.MIN_PLAYERS_NUMBER) {
                     this.startGame();
 
                 }
@@ -206,16 +205,11 @@ export class BattleRoom extends Room<GameState> {
         }
     }
 
-// Authorize client based on provided options before WebSocket handshake is complete
     onAuth(client: Client, options: any, request: http.IncomingMessage) {
         return true;
     }
 
-    // When client successfully join the room
     async onJoin(client: Client, options: any, auth: any) {
-
-
-
     }
 
     // When a client leaves the room

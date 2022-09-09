@@ -1,7 +1,7 @@
-import {LobbyRoom, RelayRoom, Server, matchMaker} from "colyseus";
+import {LobbyRoom, matchMaker, Server} from "colyseus";
 import {BattleRoom} from "./src/battle.room";
-import http, {createServer} from "http";
-import { WebSocketTransport } from "@colyseus/ws-transport"
+import http from "http";
+import {WebSocketTransport} from "@colyseus/ws-transport"
 import {DropRelayRoom} from "./src/relay.room";
 import {enhanced_logging} from "./src/logging";
 import express from "express";
@@ -20,19 +20,13 @@ async function startGameServer() {
         transport: new WebSocketTransport({})
     });
 
-    // app.get("/", (req, res) => {
-    //     res.send("Hello World!");
-    // })
-
     gameServer.define('battle', BattleRoom);
-    gameServer.define('lobby', LobbyRoom);
     gameServer.define('relay', DropRelayRoom);
 
     const relay = await matchMaker.createRoom('relay', {});
     const battle = await matchMaker.createRoom("battle", { /* options */ });
 
     enhanced_logging(relay, battle);
-
 
     return gameServer.listen(multiplayerServerPort)
 }
