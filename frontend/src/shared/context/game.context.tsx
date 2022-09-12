@@ -19,7 +19,6 @@ interface GameDispatchContext {
   saveBattleSessionOnStorage: () => void
   joinBattleRoom: (user: User) => Promise<void>
   sendSliderValues: ({ military, production, research}: SliderValuesPayload) => void
-  playAgain: () => void
 }
 
 interface GameStateContext {
@@ -269,10 +268,6 @@ const GameProvider = (props: GameProviderProps) => {
     store.battleRoom?.send(BATTLE_ROOM.ACTION, toSend.join(','));
   }
 
-  const playAgain = () => {
-    setStore("ui", "intro");
-  }
-
   return (
     <GameStateContext.Provider value={store}>
       <GameDispatchContext.Provider value={{
@@ -285,8 +280,7 @@ const GameProvider = (props: GameProviderProps) => {
         werePlayingAGame,
         saveBattleSessionOnStorage,
         joinBattleRoom,
-        sendSliderValues,
-        playAgain
+        sendSliderValues
       }}>
         <Show when={store.bootstrapped} fallback={GameLoader}>
           {props.children}

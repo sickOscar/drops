@@ -51,15 +51,16 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
     setJoyPadStore("research", "value", 33);
   });
 
-  createEffect(() => {
-    if (playerStats.milestones_reached > 0) {
+  createEffect((prev) => {
+    // Avoid animation if someone refreshes the page
+    if (playerStats.milestones_reached > 0 && prev !== playerStats.milestones_reached) {
       setShowLevelUp(true);
 
       setTimeout(() => {
         setShowLevelUp(false)
       }, 700);
     }
-  })
+  }, playerStats.milestones_reached)
 
   const handleSliderInput = (value: number, type: SLIDER_TYPE) => {
 

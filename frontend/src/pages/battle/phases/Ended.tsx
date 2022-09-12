@@ -5,10 +5,12 @@ interface IntroProps {
 const Intro = ({onPlayAgain} : IntroProps) => {
   return (
     <div class={"text-white"}>
-      Thank you for playing!
-      <br/>
-      <button onClick={onPlayAgain}>
-        Play again
+      <p>
+        Grazie per aver giocato!
+      </p>
+
+      <button class={"h-[3em] mt-10 w-full acquamarine-button"} onClick={onPlayAgain}>
+        Gioca ancora
       </button>
     </div>
   )

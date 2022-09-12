@@ -1,25 +1,28 @@
 import JoyPad from "./phases/JoyPad";
-import Intro from "./phases/Intro";
 import {useAuthState} from "../../shared/context/auth.context";
 import {User} from "@auth0/auth0-spa-js";
 import {useGameDispatch, useGameState} from "../../shared/context/game.context";
 import Queue from "./phases/Queue";
 import Ended from "./phases/Ended";
 import {BattleInfoCurrentPlayer} from "../../models/user";
+import {onMount} from "solid-js";
 
 const Battle = () => {
   const useAuth = useAuthState();
   const gameDispatch = useGameDispatch();
   const gameState = useGameState();
 
-  const isInIntro = () => gameState?.ui === "intro";
   const isInQueue = () => gameState?.ui === "queue";
   const isInGame = () => gameState?.ui === "playing";
   const isGameEnded = () => gameState?.ui === "ended";
   const isLoadingRelayRoom = () => gameState?.loading.relayRoom;
   const isLoadingBattleRoom = () => gameState?.loading.battleRoom;
 
-  const handleUserJoin = () => {
+  onMount(() => {
+    joinLobby();
+  })
+
+  const joinLobby = () => {
     gameDispatch?.startGameLoop(useAuth?.user as User);
   }
 
@@ -27,20 +30,8 @@ const Battle = () => {
     gameDispatch?.sendSliderValues(values);
   }
 
-  const handlePlayAgain = () => {
-    gameDispatch?.playAgain();
-  }
-
   return (
     <>
-      {
-        isInIntro() && (
-          <Intro
-            user={useAuth?.user as User}
-            onJoin={handleUserJoin}
-          />
-        )
-      }
       {
         isInQueue() && (
           <>
@@ -61,7 +52,7 @@ const Battle = () => {
       }
       {
         isGameEnded() && (
-          <Ended onPlayAgain={handlePlayAgain}/>
+          <Ended onPlayAgain={joinLobby}/>
         )
       }
     </>

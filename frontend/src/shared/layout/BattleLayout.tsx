@@ -12,7 +12,7 @@ const BattleLayout = () => {
 
   onMount(async () => {
     if (!useAuth?.isAuthenticated) {
-      navigate("/auth/login", {replace: true});
+      navigate("/", {replace: true});
     }
   });
 

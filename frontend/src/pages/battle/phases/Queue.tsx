@@ -3,6 +3,7 @@ import {useGameState} from "../../../shared/context/game.context";
 import {Show} from "solid-js";
 import InstructionButton from "../../../shared/components/InstructionButton";
 import {formatNextMatchInSeconds} from "../../../shared/helpers";
+import {MIN_PLAYERS} from "../../../shared/constants";
 
 interface QueueProps {
   players?: string[]
@@ -40,15 +41,23 @@ const Queue = (props: QueueProps) => {
         }
       </ul>
 
-      <Show when={gameState && gameState?.relayTimer > 0}>
-        <div class={"text-white text-sm blue-rounded-container border-1 fixed bottom-0 left-0 right-0 px-5 py-8 flex items-center justify-between"}>
+      <div class={"text-white text-sm blue-rounded-container border-1 fixed bottom-0 left-0 right-0 px-5 py-8 flex items-center justify-between"}>
+        <Show when={gameState && gameState?.relayTimer > 0}>
           <div>
             <p class={"text-grey"}>Prossima partita tra:</p>
-            <p class={"text-xl"}>{formatNextMatchInSeconds(gameState?.relayTimer || 0)}</p>
+            <p class={"text-xl"}>{formatNextMatchInSeconds(gameState!.relayTimer)}</p>
           </div>
-          <InstructionButton/>
-        </div>
-      </Show>
+        </Show>
+
+        <Show when={props.players && props.players?.length < MIN_PLAYERS}>
+          <div>
+            <p class={"text-grey"}>In attesa di giocatori...</p>
+            <p class={"text-xl"}>{props.players?.length} / {MIN_PLAYERS}</p>
+          </div>
+        </Show>
+
+        <InstructionButton/>
+      </div>
     </>
   )
 }
