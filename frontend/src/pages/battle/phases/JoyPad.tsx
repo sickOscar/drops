@@ -6,7 +6,7 @@ import JoyPadInput from "../../../shared/components/JoyPadInput";
 import {valueBetweenMinAndMax} from "../../../shared/helpers";
 import Splash from "../../../shared/icons/Splash";
 import LevelUp from "../../../shared/components/LevelUp";
-import Info from "../../../shared/icons/Info";
+import InstructionButton from "../../../shared/components/InstructionButton";
 
 interface SliderState {
   military: ResourceType
@@ -133,11 +133,11 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
         </For>
       </div>
 
-      <div class={"joyPad__slider-container main-shadow mt-auto pt-5 pb-10 mt-auto mx-[-1rem] mb-[-1rem] rounded-tr-[30px] rounded-tl-[30px] border-1 bor"}>
+      <div class={"blue-rounded-container pb-10 mt-auto mx-[-1rem] mb-[-1rem]"}>
 
         <div class={"flex justify-between items-center px-5 mb-8"}>
-          <span class={"text-white games-control-label"}>Controlli di gioco</span>
-          <button class={"flex items-center rounded-[50px] bg-uber-semitransparent-acquamarine py-2 px-3 text-white"}><Info/>&nbsp;Instruzioni</button>
+          <span class={"text-white glow-label"}>Controlli di gioco</span>
+          <InstructionButton/>
         </div>
 
         <div class={"flex justify-between items-end px-1"}>

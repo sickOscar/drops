@@ -7,7 +7,6 @@ const BattleLayout = lazy(() => import("./shared/layout/BattleLayout"));
 const Landing = lazy(() => import("./pages/Home"));
 const Battle = lazy(() => import("./pages/battle/Battle"));
 const Viewer = lazy(() => import("./pages/Viewer"));
-const Login = lazy(() => import( "./pages/Login"));
 const GameProvider = lazy(() => import( "./shared/context/game.context"));
 
 const gamePage = () => {
@@ -42,7 +41,6 @@ const App: Component = () => {
         <Route path="" component={gamePage}/>
       </Route>
       <Route path="/viewer" component={viewerPage} />
-      <Route path="/auth/login" component={Login} />
     </Routes>
   );
 };

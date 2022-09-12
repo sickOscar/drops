@@ -9,3 +9,9 @@ export const valueBetweenMinAndMax = (value: number, MIN: number, MAX: number) =
 
   return value;
 }
+
+export const formatNextMatchInSeconds = (milliseconds: number): string => {
+  return (
+    `${new Date(milliseconds).toISOString().slice(14, 19)}`
+  )
+}

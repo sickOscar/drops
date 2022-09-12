@@ -115,7 +115,7 @@ const Viewer = () => {
   return (
     <>
       {
-        viewerState?.timeToStart > 0 &&
+        viewerState && viewerState?.timeToStart > 0 &&
         <div>
           <h1>Game will start in {viewerState?.timeToStart / 1000} seconds</h1>
         </div>

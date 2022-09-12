@@ -1,5 +1,8 @@
 import {useAuthState} from "../../../shared/context/auth.context";
 import {useGameState} from "../../../shared/context/game.context";
+import {Show} from "solid-js";
+import InstructionButton from "../../../shared/components/InstructionButton";
+import {formatNextMatchInSeconds} from "../../../shared/helpers";
 
 interface QueueProps {
   players?: string[]
@@ -24,13 +27,6 @@ const Queue = (props: QueueProps) => {
   return (
     <>
       <h1 class={"text-white text-xl"}>Giocatori in coda</h1>
-      {
-        gameState?.relayTimer > 0 &&
-        <div class={"text-white text-sm"}>
-          <h2>Se nessun altro giocatore si unirà, la partita inizierà
-            tra {gameState?.relayTimer / 1000} secondi</h2>
-        </div>
-      }
       <ul>
         {
           props.players?.map(detail).map(player => (
@@ -43,6 +39,16 @@ const Queue = (props: QueueProps) => {
           ))
         }
       </ul>
+
+      <Show when={gameState && gameState?.relayTimer > 0}>
+        <div class={"text-white text-sm blue-rounded-container border-1 fixed bottom-0 left-0 right-0 px-5 py-8 flex items-center justify-between"}>
+          <div>
+            <p class={"text-grey"}>Prossima partita tra:</p>
+            <p class={"text-xl"}>{formatNextMatchInSeconds(gameState?.relayTimer || 0)}</p>
+          </div>
+          <InstructionButton/>
+        </div>
+      </Show>
     </>
   )
 }
