@@ -49,16 +49,11 @@ code {
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 canvas#qr-left, canvas#qr-right {
   z-index: 999;
-}
-
-.joyPadInput input[type="range"] {
-  transform: rotate(270deg);
-  accent-color: #1A1D4F;
 }
 
 .text-grey {
@@ -71,4 +66,29 @@ canvas#qr-left, canvas#qr-right {
 
 .glow-label {
   text-shadow: 0px 0px 4px #FFFFFF, 0px 0px 25px #FFFFFF;
+}
+
+/* Inputs */
+
+input[type="range"] {
+  transform: rotate(270deg);
+  -webkit-appearance: none;
+  height: 3px;
+  border-radius: 5px;
+  background: rgb(17, 17, 17) linear-gradient(#ffffff, #ffffff) no-repeat;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+input[type=range]::-webkit-slider-runnable-track  {
+  -webkit-appearance: none;
+  box-shadow: none;
+  border: none;
+  background: transparent;
 }

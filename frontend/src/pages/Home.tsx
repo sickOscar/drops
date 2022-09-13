@@ -20,7 +20,7 @@ const Home = () => {
 
       <h1 class="text-2xl text-white text-center my-10">Are <span class={"text-orange-400"}>y</span>ou ready to <span class={"text-orange-400"}>s</span>pray?</h1>
 
-      <div class={"text-white"}>
+      <div class={"text-white overflow-y-auto"}>
         <p>
           Immagina un futuro distopico nel quale le Intelligenze Artificiali abbiano dominato ogni mestiere creativo sulla piazza.
         </p>

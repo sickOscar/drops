@@ -9,11 +9,30 @@ interface QueueProps {
   players?: string[]
 }
 
+interface PlayerDetail {
+  name: string
+  connected: boolean
+  avatar: string
+}
+
+const PlayerRow = (props: { player: PlayerDetail, highlight: boolean }) => {
+  const { player, highlight } = props;
+
+  return (
+    <li
+      class={`${!player.connected ? "disconnected" : undefined} flex my-5 items-center ${highlight ? "bg-semitransparent-acquamarine" : "bg-semitransparent-grey"} rounded-[45px] p-1`}>
+      <img src={player.avatar} alt=""
+           class={"w-[50px] h-[50px] mr-5 rounded-full border-2 border-black"}/>
+      <span class={"text-white"}>{player.name}</span>
+    </li>
+  )
+}
+
 const Queue = (props: QueueProps) => {
   const auth = useAuthState();
   const gameState = useGameState();
 
-  const detail = (player: string) => {
+  const detail = (player: string): PlayerDetail => {
     const name = player.split('|')[0];
     const connected = player.split('|')[1] === "true";
     const avatar = player.split('|')[2];
@@ -28,15 +47,10 @@ const Queue = (props: QueueProps) => {
   return (
     <>
       <h1 class={"text-white text-xl"}>Giocatori in coda</h1>
-      <ul>
+      <ul class={"mb-24"}>
         {
           props.players?.map(detail).map(player => (
-            <li
-              class={`${!player.connected ? "disconnected" : undefined} flex my-5 items-center ${player.name === auth?.user?.name ? "bg-semitransparent-acquamarine" : "bg-semitransparent-grey"} rounded-[45px] p-1`}>
-              <img src={player.avatar} alt=""
-                   class={"w-[50px] h-[50px] mr-5 rounded-full border-2 border-black"}/>
-              <span class={"text-white"}>{player.name}</span>
-            </li>
+            <PlayerRow player={player} highlight={player.name === auth?.user?.name} />
           ))
         }
       </ul>
