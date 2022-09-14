@@ -14,7 +14,14 @@ interface ViewerStateContext  {
   round: number,
   remainingTime: number,
   playersInQueue: string[],
-  timeToStart: number
+  timeToStart: number,
+  gameState: ViewerStates
+}
+
+export enum ViewerStates {
+  RUNNING = "RUNNING",
+  DEMO = "DEMO",
+  COUNTDOWN = "COUNTDOWN",
 }
 
 interface ViewerProviderProps {
@@ -32,7 +39,8 @@ const initialState: ViewerStateContext = {
   round: 0,
   remainingTime: 0,
   playersInQueue: [],
-  timeToStart: 0
+  timeToStart: 0,
+  gameState: ViewerStates.DEMO
 }
 
 const ViewerLoader = () => {
@@ -42,6 +50,8 @@ const ViewerLoader = () => {
     </>
   )
 }
+
+let runningTimeout
 
 const ViewerProvider = (props: ViewerProviderProps) => {
   const [store, setStore] = createStore<ViewerStateContext>(initialState);
@@ -78,6 +88,13 @@ const ViewerProvider = (props: ViewerProviderProps) => {
     store.socket?.on(VIEWER_SOCKETS.FIELD, (data) => {
       try {
         setStore("field", JSON.parse(data));
+        setStore("gameState", ViewerStates.RUNNING);
+
+        clearTimeout(runningTimeout);
+        runningTimeout = setTimeout(() => {
+          setStore("gameState", ViewerStates.DEMO);
+        }, 5000);
+
       } catch (err) {
         console.log("Failed parsing field data");
       }
@@ -102,6 +119,8 @@ const ViewerProvider = (props: ViewerProviderProps) => {
 
     store.socket?.on(VIEWER_SOCKETS.TIME_TO_START, (time) => {
       setStore("timeToStart", Number(time));
+      clearTimeout(runningTimeout);
+      setStore("gameState", ViewerStates.COUNTDOWN);
     });
   }
 

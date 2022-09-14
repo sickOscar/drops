@@ -1,7 +1,7 @@
 import * as QRCode from "qrcode";
 import {createSignal, onCleanup, onMount} from "solid-js";
 import {BOARD_SIZE, CELL_SIZE, HOSTNAME} from "../shared/constants";
-import {useViewerState} from "../shared/context/viewer.context";
+import {useViewerState, ViewerStates} from "../shared/context/viewer.context";
 import p5 from "p5";
 
 const Viewer = () => {
@@ -10,14 +10,73 @@ const Viewer = () => {
   let canvas;
 
   const gameIsRunning = () => {
-    return false;
+    return viewerState?.gameState === ViewerStates.RUNNING;
   }
 
+  const gameIsCountdown = () => {
+    return viewerState?.gameState === ViewerStates.COUNTDOWN;
+  }
 
+  const gameIsDemo = () => {
+    return viewerState?.gameState === ViewerStates.DEMO;
+  }
 
   const sketch = (p: p5) => {
 
     const sqrtSide = Math.sqrt(2);
+
+    const demoPlayers = {
+      1: {
+        color: "#4EC3CB",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        res: 3000,
+        starting: [5, 5]
+      },
+      2: {
+        color: "#F2C94C",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        res: 3000,
+        starting: [50, 50]
+      },
+      3: {
+        color: "#FF9457",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        res: 3000,
+        starting: [70, 20]
+      },
+      4: {
+        color: "#FF6694",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        res: 3000,
+        starting: [80, 60]
+      },
+      5: {
+        color: "#9F0B76",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        res: 3000,
+        starting: [30, 12]
+      },
+      6: {
+        color: "#9896A5",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        res: 3000,
+        starting: [90, 90]
+      },
+    }
+
+    const demoField: number[][] = [];
 
 
     const drawBackWall = () => {
@@ -62,7 +121,7 @@ const Viewer = () => {
         drawBackWall();
 
         p.noStroke();
-        const perlinMultiplier = 0.5;
+        const perlinMultiplier = 0.3;
 
         if (!players || Object.entries(players).length === 0) {
           return;
@@ -71,14 +130,44 @@ const Viewer = () => {
         for (let i = 0; i < field.length; i++) {
           for (let j = 0; j < field[i].length; j++) {
 
+            if (cleanedField[i][j] === 1) {
+              continue;
+            }
 
             if (field[i][j] > 0) {
 
               const c = p.color(players[field[i][j]].color);
 
-              const perlin = p.noise(i * perlinMultiplier, j * perlinMultiplier);
+              const alphaPerlin = p.noise(i * perlinMultiplier, j * perlinMultiplier);
 
-              c.setAlpha(128 + p.map(perlin, 0, 1, 0, 128));
+              const maxI = Math.min(BOARD_SIZE - 1, i + 1);
+              const maxJ = Math.min(BOARD_SIZE - 1, j + 1);
+
+              const minI = Math.max(0, i - 1);
+              const minJ = Math.max(0, j - 1);
+
+              let closeToEnemy = false;
+
+              for (let x = minI; x <= maxI; x++) {
+                for (let y = minJ; y <= maxJ; y++) {
+
+                  if (field[x][y] > 0 && field[x][y] !== field[i][j]) {
+                    closeToEnemy = true;
+                    break;
+                  }
+                }
+                if (closeToEnemy) {
+                  break;
+                }
+              }
+
+              if (closeToEnemy) {
+                c.setAlpha(100);
+              } else {
+                c.setAlpha(128 + p.map(alphaPerlin, 0, 1, 0, 128));
+              }
+
+
               p.fill(c);
 
               const rayPerlin = p.map(p.noise(j, i), 0, 1, 0.7, 2.5);
@@ -106,68 +195,51 @@ const Viewer = () => {
       }
     }
 
-    let font;
+    let cleanedField: number[][] = [];
 
-    p.setup = function () {
-      canvas = p.createCanvas(BOARD_SIZE * (CELL_SIZE), BOARD_SIZE * (CELL_SIZE));
-      canvas.parent("field")
+    function resetCleanedField() {
+      cleanedField = [];
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        cleanedField[i] = [];
+        for (let j = 0; j < BOARD_SIZE; j++) {
+          cleanedField[i][j] = 0;
+        }
+      }
+    }
+
+    function moveCleaningBot() {
+
+      const currentBotX = ((BOARD_SIZE * CELL_SIZE) / 2) + Math.sin(p.frameCount / 10) * ((BOARD_SIZE * CELL_SIZE) / 2);
+      const currentBotY = p.frameCount % BOARD_SIZE;
+
+      const n = p.noise(p.frameCount / 50);
+
+
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        cleanedField[i][currentBotY] = 1;
+      }
+
+      p.image(botImage,
+        currentBotX,
+        currentBotY * CELL_SIZE,
+        50 * p.map(n, 0, 2, 0.5, 5),
+        50 * p.map(n, 0, 2, 0.5, 5)
+      );
+
 
     }
 
 
-
-    const demoPlayers = {
-      1: {
-        color: "#4EC3CB",
-        m: 0.33,
-        p: 0.33,
-        r: 0.34,
-        starting: [5, 5]
-      },
-      2: {
-        color: "#F2C94C",
-        m: 0.33,
-        p: 0.33,
-        r: 0.34,
-        starting: [50, 50]
-      },
-      3: {
-        color: "#FF9457",
-        m: 0.33,
-        p: 0.33,
-        r: 0.34,
-        starting: [70, 20]
-      },
-      4: {
-        color: "#FF6694",
-        m: 0.33,
-        p: 0.33,
-        r: 0.34,
-        starting: [80, 60]
-      },
-      5: {
-        color: "#9F0B76",
-        m: 0.33,
-        p: 0.33,
-        r: 0.34,
-        starting: [30, 12]
-      },
-      6: {
-        color: "#9896A5",
-        m: 0.33,
-        p: 0.33,
-        r: 0.34,
-        starting: [90, 90]
-      },
-    }
-
-    const demoField:number[][] = [];
-
-    function resetDemoField() {
+    function resetDemo() {
 
       // set random starting for demoPlayers
       for (let p of Object.values(demoPlayers)) {
-        p.starting = [Math.floor(Math.random() * (BOARD_SIZE - 1)), Math.floor(Math.random() * (BOARD_SIZE -1) )];
+        p.starting = [Math.floor(Math.random() * (BOARD_SIZE - 1)), Math.floor(Math.random() * (BOARD_SIZE - 1))];
+        p.m = Math.random();
+        const rest = 1 - p.m;
+        p.p = Math.random() * rest;
+        p.r = rest - p.p;
+
       }
 
       for (let i = 0; i < BOARD_SIZE; i++) {
@@ -187,45 +259,76 @@ const Viewer = () => {
       }
     }
 
-    resetDemoField();
 
+    function updateCell(i: number, j: number) {
+      if (demoField[i][j] === 0) {
+        return;
+      }
 
+      const maxI = Math.min(BOARD_SIZE - 1, i + 1);
+      const maxJ = Math.min(BOARD_SIZE - 1, j + 1);
+
+      const minI = Math.max(0, i - 1);
+      const minJ = Math.max(0, j - 1);
+
+      // get random cell in defined boundaries
+      const randomI = Math.floor(Math.random() * (maxI - minI + 1)) + minI;
+      const randomJ = Math.floor(Math.random() * (maxJ - minJ + 1)) + minJ;
+
+      if (demoField[randomI][randomJ] === 0) {
+        demoField[randomI][randomJ] = demoField[i][j];
+      } else {
+
+        const thisCellPlayer = demoPlayers[demoField[i][j]];
+        const enemyCellPlayer = demoPlayers[demoField[randomI][randomJ]];
+
+        if (
+          thisCellPlayer.m > enemyCellPlayer.m
+          && thisCellPlayer.res > 10
+        ) {
+          thisCellPlayer.res = thisCellPlayer.res - 10;
+          demoField[randomI][randomJ] = demoField[i][j];
+        }
+
+      }
+    }
+
+    let botImage;
+
+    p.preload = function () {
+      botImage = p.loadImage('/src/assets/drone.png');
+    }
+
+    p.setup = function () {
+      canvas = p.createCanvas(BOARD_SIZE * (CELL_SIZE), BOARD_SIZE * (CELL_SIZE));
+      canvas.parent("field")
+      resetDemo();
+    }
 
     p.draw = function () {
 
+
       if (gameIsRunning()) {
+        resetCleanedField();
         p.frameRate(4);
         drawField(viewerState.field, viewerState.playersMap);
+        resetDemo();
+      }
 
-      } else {
+      if (gameIsDemo()) {
+        resetCleanedField();
 
         p.frameRate(5);
 
         for (let i = 0; i < demoField.length; i++) {
           for (let j = 0; j < demoField[i].length; j++) {
-
-            if (demoField[i][j] === 0) {
-              continue;
-            }
-
-            const player = demoPlayers[demoField[i][j]];
-
-            const maxI = Math.min(BOARD_SIZE - 1 , i + 1);
-            const maxJ = Math.min(BOARD_SIZE - 1, j + 1);
-
-            const minI = Math.max(0, i - 1);
-            const minJ = Math.max(0, j - 1);
-
-            // get random cell in defined boundaries
-            const randomI = Math.floor(Math.random() * (maxI - minI + 1)) + minI;
-            const randomJ = Math.floor(Math.random() * (maxJ - minJ + 1)) + minJ;
-
-            if (demoField[randomI][randomJ] === 0) {
-              demoField[randomI][randomJ] = demoField[i][j];
-            }
-
+            updateCell(i, j);
           }
         }
+
+        Object.values(demoPlayers).forEach(p => {
+          p.res += 50;
+        })
 
         let fullfilled = true;
         for (let i = 0; i < demoField.length; i++) {
@@ -237,13 +340,17 @@ const Viewer = () => {
         }
 
         if (fullfilled) {
-          resetDemoField();
+          resetDemo();
         }
-
 
         drawField(demoField, demoPlayers);
 
+      }
 
+      if (gameIsCountdown()) {
+        p.frameRate(20);
+        drawField(demoField, demoPlayers);
+        moveCleaningBot();
       }
 
     }
@@ -269,29 +376,39 @@ const Viewer = () => {
         <div class="container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <div class="bg-purple-400 bg-opacity-70	p-5">
             <h1 class="text-white text-center text-l">
-              The next vandalism will start in <span class="text-xl">{viewerState?.timeToStart / 1000}</span> seconds
+              La prossima vandalizzazione partirà tra <span class="text-xl">{viewerState?.timeToStart / 1000}</span> secondi
             </h1>
           </div>
         </div>
       }
-      <div class={"flex flex-row"}>
+      <div class={"flex flex-row justify-center"}>
         <div id={"field"} ref={canvas}></div>
-        <div class={"text-white"}>
-          <h2>Ranking</h2>
-          <ol>
-            {
-              Object.values(useViewerState()?.playersMap || [])
-                .sort((a, b) => b.score - a.score)
-                .map(player => (
-                  <li class={"flex"}>
+        <div class={"text-white w-96 overflow-auto h-screen"}>
+
+          {viewerState?.gameState === ViewerStates.RUNNING && <div class="ranking">
+            <h2>Ranking</h2>
+            <ol>
+              {
+                Object.values(useViewerState()?.playersMap || [])
+                  .sort((a, b) => b.score - a.score)
+                  .map(player => (
+                    <li class={"flex"}>
                     <span class={"w-[20px] h-[20px]"}
                           style={{"background-color": player.color}}></span>{player.score} {player.name}
-                  </li>
-                ))
-            }
-          </ol>
+                    </li>
+                  ))
+              }
+            </ol>
+            <h3>Time left {useViewerState()?.remainingTime}/600</h3>
+          </div>
+          }
 
-          <h3>Time left {useViewerState()?.remainingTime}/600</h3>
+          <div>
+            <h2>Join the game!</h2>
+            <p>Scannerizza i QR code</p>
+          </div>
+
+
         </div>
       </div>
       <canvas id="qr-left" class={"fixed bottom-0 left-0"}></canvas>

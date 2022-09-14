@@ -176,14 +176,12 @@ export class BattleRoom extends Room<GameState> {
             this.state.time = "600"
 
             const colors = [
-                '#FF0000',
-                '#00FF00',
-                '#0000FF',
-                '#FFFF00',
-                '#FF00FF',
-                '#00FFFF',
-                '#A047C9ED',
-                '#1C4620FF'
+                '#4EC3CB',
+                '#F2C94C',
+                '#FF9457',
+                '#FF6694',
+                '#9F0B76',
+                '#9896A5',
             ];
 
             let index = 0;
