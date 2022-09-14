@@ -1,9 +1,9 @@
 import {useAuthState} from "../../../shared/context/auth.context";
 import {useGameState} from "../../../shared/context/game.context";
-import {Show} from "solid-js";
+import {createMemo, Show} from "solid-js";
 import InstructionButton from "../../../shared/components/InstructionButton";
 import {formatNextMatchInSeconds} from "../../../shared/helpers";
-import {MIN_PLAYERS} from "../../../shared/constants";
+import {MAX_PLAYERS, MIN_PLAYERS} from "../../../shared/constants";
 
 interface QueueProps {
   players?: string[]
@@ -44,16 +44,49 @@ const Queue = (props: QueueProps) => {
     }
   }
 
+  const playersLobbies = createMemo<Array<Array<PlayerDetail>> | undefined>(() => {
+    const result = (props.players || [])?.reduce((result: any[], item, index) => {
+      const chunkIndex = Math.floor(index / MAX_PLAYERS);
+
+      if (!result[chunkIndex]) {
+        result[chunkIndex] = [];
+      }
+
+      result[chunkIndex].push(detail(item));
+
+      return result;
+    }, []);
+
+    return result;
+  });
+
   return (
     <>
-      <h1 class={"text-white text-xl"}>Giocatori in coda</h1>
-      <ul class={"mb-24"}>
+      <p class={"text-white text-xl"}>Prossimi giocatori</p>
+      <div class={"mb-24 overflow-y-auto"}>
         {
-          props.players?.map(detail).map(player => (
-            <PlayerRow player={player} highlight={player.name === auth?.user?.name} />
-          ))
+          playersLobbies()?.map((lobby, index) => {
+            if (index === 0) {
+              return (
+                <ul>
+                  {
+                    lobby.map(player => <PlayerRow player={player} highlight={player.name === auth?.user?.name} />)
+                  }
+                </ul>
+              )
+            }
+
+            return (
+              <ul>
+                <p class={"text-white text-xl"}>Giocatori in coda, match #{index + 1}</p>
+                {
+                  lobby.map(player => <PlayerRow player={player} highlight={player.name === auth?.user?.name} />)
+                }
+              </ul>
+            )
+          })
         }
-      </ul>
+      </div>
 
       <div class={"text-white text-sm blue-rounded-container border-1 fixed bottom-0 left-0 right-0 px-5 py-8 flex items-center justify-between"}>
         <Show when={gameState && gameState?.relayTimer > 0}>
