@@ -91,6 +91,12 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
       if (state === 'endgame') {
         this.state.gameRunning = false;
         this.playingPlayers.clear();
+
+        if (!this.isGameRunning() && this.hasEnoughConnectedPlayers()) {
+          this.startGameTimer();
+          this.startBroadcastTimer();
+        }
+
       }
     })
 

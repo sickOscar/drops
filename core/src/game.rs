@@ -5,7 +5,7 @@ use colored::Colorize;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread::sleep;
 
-use crate::player::{Player, create_players_hashmap, update_players};
+use crate::player::{Player, create_players_hashmap, update_players, update_players_owned_cells};
 use crate::board::{update_board};
 use crate::render::{render};
 use crate::input::{handle_game_input, handle_initial_commands};
@@ -54,6 +54,8 @@ pub fn game_loop(from_node_rx: Receiver<String>, to_node_tx: Sender<String>) {
 
             // update resources of each player
             update_players(&mut players);
+
+            update_players_owned_cells(&mut players, &new_field);
 
             // set field to new field
             field = new_field.clone();

@@ -71,11 +71,29 @@ pub fn add_players_to_field(field: &mut [[i32; super::BOARD_SIZE]; super::BOARD_
 
 
 pub fn update_players(players: &mut HashMap<i32, RefCell<Player>>) {
+
     for (_player_id, player) in players {
         let mut player_ref = player.borrow_mut();
         player_ref.update_resources();
         player_ref.update_development();
+        player_ref.owned_cells = 0;
     }
+
+}
+
+pub fn update_players_owned_cells(players: &mut HashMap<i32, RefCell<Player>>, field: &[[i32;super::BOARD_SIZE]; super::BOARD_SIZE]) {
+    // loop through the new field and update the player's owned cells
+    for x in 0..super::BOARD_SIZE {
+        for y in 0..super::BOARD_SIZE {
+            let cell_player_id = field[x][y];
+            if cell_player_id != 0 {
+                // let mut player = players.get(&cell_player_id).unwrap().borrow_mut();
+                let mut player = players.get_mut(&cell_player_id).unwrap().borrow_mut();
+                player.owned_cells += 1;
+            }
+        }
+    }
+
 }
 
 pub fn create_players_hashmap() -> HashMap<i32, RefCell<Player>> {

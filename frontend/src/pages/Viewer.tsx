@@ -9,79 +9,85 @@ const Viewer = () => {
   const [p5Instance, setP5Instance] = createSignal<p5 | null>(null);
   let canvas;
 
+  const gameIsRunning = () => {
+    return false;
+  }
+
+
 
   const sketch = (p: p5) => {
 
     const sqrtSide = Math.sqrt(2);
 
-    p.setup = function () {
-      canvas = p.createCanvas(BOARD_SIZE * (CELL_SIZE), BOARD_SIZE * (CELL_SIZE));
-      canvas.parent("field")
-      p.frameRate(20);
 
+    const drawBackWall = () => {
+      const brickWidth = 8;
+      const brickHeight = 4;
+
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        for (let j = 0; j < BOARD_SIZE; j++) {
+          p.stroke(255);
+          p.noFill();
+
+          if (j % (brickHeight * 2) === 0) {
+            if (i % (brickWidth) === 0) {
+              p.rect(
+                i * CELL_SIZE,
+                j * CELL_SIZE,
+                CELL_SIZE * brickWidth,
+                CELL_SIZE * brickHeight
+              );
+            }
+          }
+
+          if (j % (brickHeight * 2) === brickHeight) {
+            if (i % (brickWidth) === brickWidth / 2) {
+              p.rect(
+                i * CELL_SIZE,
+                j * CELL_SIZE,
+                CELL_SIZE * brickWidth,
+                CELL_SIZE * brickHeight
+              );
+            }
+          }
+
+        }
+      }
     }
 
-    p.draw = function () {
+    function drawField(field: number[][], players: any) {
       try {
-        // p.background('rgba(0,0,0,0)');
         p.clear(0, 0, 0, 0.5);
 
-        const brickWidth = 8;
-        const brickHeight = 4;
-
-        for (let i = 0; i < BOARD_SIZE; i++) {
-          for (let j = 0; j < BOARD_SIZE; j++) {
-            p.stroke(255);
-            p.noFill();
-
-            if (j % (brickHeight * 2) === 0) {
-              if (i % (brickWidth) === 0) {
-                p.rect(
-                    i * CELL_SIZE,
-                    j * CELL_SIZE,
-                    CELL_SIZE * brickWidth,
-                    CELL_SIZE * brickHeight
-                );
-              }
-            }
-
-            if (j % (brickHeight * 2) === brickHeight) {
-              if (i % (brickWidth) === brickWidth / 2) {
-                p.rect(
-                    i * CELL_SIZE,
-                    j * CELL_SIZE,
-                    CELL_SIZE * brickWidth,
-                    CELL_SIZE * brickHeight
-                );
-              }
-            }
-
-          }
-        }
+        drawBackWall();
 
         p.noStroke();
-        const perlinMultiplier = 0.1;
+        const perlinMultiplier = 0.5;
 
-        if (!viewerState || !viewerState.playersMap || Object.entries(viewerState?.playersMap).length === 0) {
+        if (!players || Object.entries(players).length === 0) {
           return;
         }
 
-        for (let i = 0; i < viewerState.field.length; i++) {
-          for (let j = 0; j < viewerState.field[i].length; j++) {
+        for (let i = 0; i < field.length; i++) {
+          for (let j = 0; j < field[i].length; j++) {
 
 
-            if (viewerState.field[i][j] > 0) {
-              
-              const c = p.color(viewerState.playersMap[viewerState?.field[i][j]].color);
+            if (field[i][j] > 0) {
+
+              const c = p.color(players[field[i][j]].color);
 
               const perlin = p.noise(i * perlinMultiplier, j * perlinMultiplier);
 
               c.setAlpha(128 + p.map(perlin, 0, 1, 0, 128));
               p.fill(c);
 
-              const rayPerlin = p.map(p.noise(j, i), 0, 1, 0.7, 1.5);
+              const rayPerlin = p.map(p.noise(j, i), 0, 1, 0.7, 2.5);
 
-              p.circle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE * sqrtSide * rayPerlin);
+              p.circle(
+                i * CELL_SIZE,
+                j * CELL_SIZE,
+                CELL_SIZE * (sqrtSide * rayPerlin)
+              );
 
 
             } else {
@@ -91,14 +97,158 @@ const Viewer = () => {
           }
         }
 
+
       } catch (err) {
         // un catch per domarli tutti
         // l'applicazione non deve crashare perchè non voglio andare a fare F5 sul pc
         // durante il contest
         console.error(err);
       }
+    }
+
+    let font;
+
+    p.setup = function () {
+      canvas = p.createCanvas(BOARD_SIZE * (CELL_SIZE), BOARD_SIZE * (CELL_SIZE));
+      canvas.parent("field")
 
     }
+
+
+
+    const demoPlayers = {
+      1: {
+        color: "#4EC3CB",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        starting: [5, 5]
+      },
+      2: {
+        color: "#F2C94C",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        starting: [50, 50]
+      },
+      3: {
+        color: "#FF9457",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        starting: [70, 20]
+      },
+      4: {
+        color: "#FF6694",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        starting: [80, 60]
+      },
+      5: {
+        color: "#9F0B76",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        starting: [30, 12]
+      },
+      6: {
+        color: "#9896A5",
+        m: 0.33,
+        p: 0.33,
+        r: 0.34,
+        starting: [90, 90]
+      },
+    }
+
+    const demoField:number[][] = [];
+
+    function resetDemoField() {
+
+      // set random starting for demoPlayers
+      for (let p of Object.values(demoPlayers)) {
+        p.starting = [Math.floor(Math.random() * (BOARD_SIZE - 1)), Math.floor(Math.random() * (BOARD_SIZE -1) )];
+      }
+
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        demoField.push([]);
+        for (let j = 0; j < BOARD_SIZE; j++) {
+          demoField[i][j] = 0;
+
+          // check if there is a player in this cell
+          for (const player of Object.keys(demoPlayers)) {
+            if (demoPlayers[player].starting[0] === i && demoPlayers[player].starting[1] === j) {
+              demoField[i][j] = player as number;
+              break;
+            }
+          }
+
+        }
+      }
+    }
+
+    resetDemoField();
+
+
+
+    p.draw = function () {
+
+      if (gameIsRunning()) {
+        p.frameRate(4);
+        drawField(viewerState.field, viewerState.playersMap);
+
+      } else {
+
+        p.frameRate(5);
+
+        for (let i = 0; i < demoField.length; i++) {
+          for (let j = 0; j < demoField[i].length; j++) {
+
+            if (demoField[i][j] === 0) {
+              continue;
+            }
+
+            const player = demoPlayers[demoField[i][j]];
+
+            const maxI = Math.min(BOARD_SIZE - 1 , i + 1);
+            const maxJ = Math.min(BOARD_SIZE - 1, j + 1);
+
+            const minI = Math.max(0, i - 1);
+            const minJ = Math.max(0, j - 1);
+
+            // get random cell in defined boundaries
+            const randomI = Math.floor(Math.random() * (maxI - minI + 1)) + minI;
+            const randomJ = Math.floor(Math.random() * (maxJ - minJ + 1)) + minJ;
+
+            if (demoField[randomI][randomJ] === 0) {
+              demoField[randomI][randomJ] = demoField[i][j];
+            }
+
+          }
+        }
+
+        let fullfilled = true;
+        for (let i = 0; i < demoField.length; i++) {
+          for (let j = 0; j < demoField[i].length; j++) {
+            if (demoField[i][j] === 0) {
+              fullfilled = false;
+            }
+          }
+        }
+
+        if (fullfilled) {
+          resetDemoField();
+        }
+
+
+        drawField(demoField, demoPlayers);
+
+
+      }
+
+    }
+
+
   }
 
   onMount(async () => {
@@ -114,10 +264,14 @@ const Viewer = () => {
 
   return (
     <>
-      {
-        viewerState && viewerState?.timeToStart > 0 &&
-        <div>
-          <h1>Game will start in {viewerState?.timeToStart / 1000} seconds</h1>
+      {viewerState && viewerState?.timeToStart > 0 &&
+
+        <div class="container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div class="bg-purple-400 bg-opacity-70	p-5">
+            <h1 class="text-white text-center text-l">
+              The next vandalism will start in <span class="text-xl">{viewerState?.timeToStart / 1000}</span> seconds
+            </h1>
+          </div>
         </div>
       }
       <div class={"flex flex-row"}>

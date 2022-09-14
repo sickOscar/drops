@@ -16,13 +16,13 @@ use game::{game_loop};
 
 pub const MAX_PLAYERS: i8 = 8;
 pub const BOARD_SIZE: usize = 100;
-pub const MAX_ITERATIONS: i32 = 600;
+pub const MAX_ITERATIONS: i32 = 5;
 pub const TIME_BETWEEN_ITERATIONS: u64 = 500;
 pub const STARTING_RESOURCES: i32 = (BOARD_SIZE * BOARD_SIZE) as i32;
 pub const RESOURCES_TO_CONQUER_EMPTY_CELL: f32 = 1.0;
 pub const RESOURCES_TO_CONQUER_FILLED_CELL: f32 = 10.0;
 const RESOURCES_AT_END_ROUND:f32 = 50.0;
-const DEVELOPMENT_AT_END_ROUND:f32 = 5.0;
+const DEVELOPMENT_AT_END_ROUND:f32 = 4.0;
 const MAX_DEVELOPMENT:f32 = 100.0;
 const STARTING_POSITIONS:[(usize, usize); MAX_PLAYERS as usize] = [
     (1, 1),
