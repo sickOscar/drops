@@ -8,11 +8,14 @@ const Landing = lazy(() => import("./pages/Home"));
 const Battle = lazy(() => import("./pages/battle/Battle"));
 const Viewer = lazy(() => import("./pages/Viewer"));
 const GameProvider = lazy(() => import( "./shared/context/game.context"));
+import ScreenOrientationGuard from "./shared/guards/ScreenOrientationGuard";
 
 const gamePage = () => {
   return (
     <GameProvider>
-      <Battle/>
+      <ScreenOrientationGuard>
+        <Battle/>
+      </ScreenOrientationGuard>
     </GameProvider>
   )
 }
