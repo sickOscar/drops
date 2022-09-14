@@ -21,7 +21,7 @@ interface GameDispatchContext {
   sendSliderValues: ({ military, production, research}: SliderValuesPayload) => void
 }
 
-interface GameStateContext {
+export interface GameStateContext {
   battleRoom: Room | null,
   relayRoom: Room | null,
   relayQueue: string[],
@@ -52,7 +52,7 @@ const initialState: GameStateContext = {
   battleRoom: null,
   relayQueue: [],
   relayRoom: null,
-  relayTimer: 0,
+  relayTimer: -1,
   bootstrapped: false,
   ui: "intro",
   currentPlayerStats: null,
@@ -149,6 +149,7 @@ const GameProvider = (props: GameProviderProps) => {
     setStore(
       produce(state => {
         state.loading.relayRoom = false;
+        state.relayTimer = -1;
       })
     )
 

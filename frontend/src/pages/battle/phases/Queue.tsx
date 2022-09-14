@@ -1,6 +1,6 @@
 import {useAuthState} from "../../../shared/context/auth.context";
 import {useGameState} from "../../../shared/context/game.context";
-import {createMemo, Show} from "solid-js";
+import {createMemo, createSignal, Show} from "solid-js";
 import InstructionButton from "../../../shared/components/InstructionButton";
 import {formatNextMatchInSeconds} from "../../../shared/helpers";
 import {MAX_PLAYERS, MIN_PLAYERS} from "../../../shared/constants";
@@ -17,12 +17,29 @@ interface PlayerDetail {
 
 const PlayerRow = (props: { player: PlayerDetail, highlight: boolean }) => {
   const { player, highlight } = props;
+  const [ imgError, setImgError ] = createSignal(false);
+  const commonClasses = "w-[50px] h-[50px] mr-5 rounded-full border-2 border-black";
+
+  const letters = () => {
+    const [firstName, lastName] = props.player.name.split(" ");
+
+    return (<>{firstName[0] || ""}&nbsp;{lastName[0] || ""}</>);
+  }
 
   return (
     <li
       class={`${!player.connected ? "disconnected" : undefined} flex my-5 items-center ${highlight ? "bg-semitransparent-acquamarine" : "bg-semitransparent-grey"} rounded-[45px] p-1`}>
-      <img src={player.avatar} alt=""
-           class={"w-[50px] h-[50px] mr-5 rounded-full border-2 border-black"}/>
+      <Show when={!imgError()}>
+        <img src={player.avatar} alt=""
+             class={commonClasses}
+             onError={() => setImgError(true)}
+        />
+      </Show>
+      <Show when={imgError()}>
+        <div class={`${commonClasses} bg-white flex justify-center items-center text-xl`}>
+          {letters()}
+        </div>
+      </Show>
       <span class={"text-white"}>{player.name}</span>
     </li>
   )
@@ -62,7 +79,6 @@ const Queue = (props: QueueProps) => {
 
   return (
     <>
-      <p class={"text-white text-xl"}>Prossimi giocatori</p>
       <div class={"mb-24 overflow-y-auto"}>
         {
           playersLobbies()?.map((lobby, index) => {
@@ -89,7 +105,7 @@ const Queue = (props: QueueProps) => {
       </div>
 
       <div class={"text-white text-sm blue-rounded-container border-1 fixed bottom-0 left-0 right-0 px-5 py-8 flex items-center justify-between"}>
-        <Show when={gameState && gameState?.relayTimer > 0}>
+        <Show when={gameState && gameState?.relayTimer >= 0}>
           <div>
             <p class={"text-grey"}>Prossima partita tra:</p>
             <p class={"text-xl"}>{formatNextMatchInSeconds(gameState!.relayTimer)}</p>

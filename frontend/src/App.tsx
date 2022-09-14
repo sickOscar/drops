@@ -10,11 +10,11 @@ const Viewer = lazy(() => import("./pages/Viewer"));
 const GameProvider = lazy(() => import( "./shared/context/game.context"));
 const ScreenOrientationGuard = lazy(() => import( "./shared/guards/ScreenOrientationGuard"));
 
-const gamePage = () => {
+const battlePage = () => {
   return (
     <GameProvider>
       <ScreenOrientationGuard>
-        <Battle/>
+        <BattleLayout/>
       </ScreenOrientationGuard>
     </GameProvider>
   )
@@ -40,8 +40,8 @@ const App: Component = () => {
   return (
     <Routes>
       <Route path="/" component={Landing} />
-      <Route path="/battle" component={BattleLayout}>
-        <Route path="" component={gamePage}/>
+      <Route path="/battle" component={battlePage}>
+        <Route path="" component={Battle}/>
       </Route>
       <Route path="/viewer" component={viewerPage} />
     </Routes>

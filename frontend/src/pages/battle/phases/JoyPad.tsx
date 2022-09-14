@@ -137,7 +137,7 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
       <div class={"blue-rounded-container pb-10 mt-auto mx-[-1rem] mb-[-1rem]"}>
 
         <div class={"flex justify-between items-center px-5 mb-8"}>
-          <span class={"text-white glow-label"}>Controlli di gioco</span>
+          <span class={"text-white"}>Controlli di gioco</span>
           <InstructionButton/>
         </div>
 

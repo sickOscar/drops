@@ -7,17 +7,12 @@ import Ended from "./phases/Ended";
 import {BattleInfoCurrentPlayer} from "../../models/user";
 import {onMount} from "solid-js";
 import ErrorMessage from "../../shared/components/ErrorMessage";
+import {isGameEnded, isInGame, isInQueue, isLoadingBattleRoom, isLoadingRelayRoom} from "../../shared/helpers";
 
 const Battle = () => {
   const useAuth = useAuthState();
   const gameDispatch = useGameDispatch();
   const gameState = useGameState();
-
-  const isInQueue = () => gameState?.ui === "queue";
-  const isInGame = () => gameState?.ui === "playing";
-  const isGameEnded = () => gameState?.ui === "ended";
-  const isLoadingRelayRoom = () => gameState?.loading.relayRoom;
-  const isLoadingBattleRoom = () => gameState?.loading.battleRoom;
 
   onMount(() => {
     joinLobby();
@@ -34,25 +29,25 @@ const Battle = () => {
   return (
     <>
       {
-        isInQueue() && (
+        isInQueue(gameState) && (
           <>
-            {isLoadingRelayRoom() && <span class={"text-white text-xl"}>Joining room...</span>}
-            {!isLoadingRelayRoom() && gameState?.errors.relayRoom && <ErrorMessage message={"Error joining relay room, please try again refreshing the page."}/>}
-            {!isLoadingRelayRoom() && !gameState?.errors.relayRoom && (gameState?.relayQueue.length || 0) > 0 && <Queue players={gameState?.relayQueue}/>}
+            {isLoadingRelayRoom(gameState) && <span class={"text-white text-xl"}>Joining room...</span>}
+            {!isLoadingRelayRoom(gameState) && gameState?.errors.relayRoom && <ErrorMessage message={"Error joining relay room, please try again refreshing the page."}/>}
+            {!isLoadingRelayRoom(gameState) && !gameState?.errors.relayRoom && (gameState?.relayQueue.length || 0) > 0 && <Queue players={gameState?.relayQueue}/>}
           </>
         )
       }
       {
-        isInGame() && (
+        isInGame(gameState) && (
           <>
-            {isLoadingBattleRoom() && <span class={"text-white text-xl"}>Joining battle...</span>}
-            {!isLoadingBattleRoom() && gameState?.errors.battleRoom && <ErrorMessage message={"Error joining battle room, please try again refreshing the page."}/>}
-            {!isLoadingBattleRoom() && !gameState?.errors.battleRoom && gameState?.currentPlayerStats !== null && <JoyPad onChange={handleSliderChange} playerStats={gameState?.currentPlayerStats as BattleInfoCurrentPlayer}/>}
+            {isLoadingBattleRoom(gameState) && <span class={"text-white text-xl"}>Joining battle...</span>}
+            {!isLoadingBattleRoom(gameState) && gameState?.errors.battleRoom && <ErrorMessage message={"Error joining battle room, please try again refreshing the page."}/>}
+            {!isLoadingBattleRoom(gameState) && !gameState?.errors.battleRoom && gameState?.currentPlayerStats !== null && <JoyPad onChange={handleSliderChange} playerStats={gameState?.currentPlayerStats as BattleInfoCurrentPlayer}/>}
           </>
         )
       }
       {
-        isGameEnded() && (
+        isGameEnded(gameState) && (
           <Ended onPlayAgain={joinLobby}/>
         )
       }
