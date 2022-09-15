@@ -130,6 +130,10 @@ const Viewer = () => {
         for (let i = 0; i < field.length; i++) {
           for (let j = 0; j < field[i].length; j++) {
 
+            if (players[field[i][j]] === undefined) {
+              continue;
+            }
+
             if (cleanedField[i][j] === 1) {
               continue;
             }
@@ -196,8 +200,12 @@ const Viewer = () => {
     }
 
     let cleanedField: number[][] = [];
+    let cleaningBotState = 'cleaning';
+    let cleaningBotPosition = [0, 0];
+    let cleaningBotEntered = false;
+    let cleaningBotFrameOffset = 0;
 
-    function resetCleanedField() {
+    function resetCleaningBotState() {
       cleanedField = [];
       for (let i = 0; i < BOARD_SIZE; i++) {
         cleanedField[i] = [];
@@ -205,26 +213,55 @@ const Viewer = () => {
           cleanedField[i][j] = 0;
         }
       }
+      cleaningBotEntered = false;
     }
 
     function moveCleaningBot() {
 
-      const currentBotX = ((BOARD_SIZE * CELL_SIZE) / 2) + Math.sin(p.frameCount / 10) * ((BOARD_SIZE * CELL_SIZE) / 2);
-      const currentBotY = p.frameCount % BOARD_SIZE;
+      const middle = ((BOARD_SIZE * CELL_SIZE) / 2);
 
-      const n = p.noise(p.frameCount / 50);
+      if (cleaningBotState === 'cleaning') {
+
+        if (!cleaningBotEntered) {
+          cleaningBotFrameOffset = p.frameCount;
+          cleaningBotEntered = true;
+        }
+
+        const currentBotX = middle + Math.sin(p.frameCount / 10) * ((BOARD_SIZE * CELL_SIZE) / 2 - 50);
+        const currentBotYIndex = (p.frameCount - cleaningBotFrameOffset) % BOARD_SIZE;
+
+        cleaningBotPosition = [currentBotX, currentBotYIndex * CELL_SIZE];
+
+        const n = p.noise(p.frameCount / 50);
+
+        for (let i = 0; i < BOARD_SIZE; i++) {
+          cleanedField[i][currentBotYIndex] = 1;
+        }
 
 
-      for (let i = 0; i < BOARD_SIZE; i++) {
-        cleanedField[i][currentBotY] = 1;
+        p.stroke('red');
+        p.fill('rgba(255, 0, 0, 0.3)');
+        p.rect(0, cleaningBotPosition[1] - 50, BOARD_SIZE * CELL_SIZE, 50);
+
+        // p.line(0, cleaningBotPosition[1], BOARD_SIZE * CELL_SIZE, cleaningBotPosition[1]);
+        // p.line(0, cleaningBotPosition[1] - 50, BOARD_SIZE * CELL_SIZE, cleaningBotPosition[1] - 50);
+
+        for (let i = 0; i < 10; i++) {
+          p.line(
+            cleaningBotPosition[0],
+            cleaningBotPosition[1],
+            p.map(Math.random(), 0, 1, 0, BOARD_SIZE * CELL_SIZE),
+            currentBotYIndex * CELL_SIZE - Math.random() * 50,
+          )
+        }
+
+        p.image(botImage,
+          currentBotX - 40,
+          currentBotYIndex * CELL_SIZE - 40,
+          50 * p.map(n, 0, 2, 2, 10),
+          50 * p.map(n, 0, 2, 2, 10)
+        );
       }
-
-      p.image(botImage,
-        currentBotX,
-        currentBotY * CELL_SIZE,
-        50 * p.map(n, 0, 2, 0.5, 5),
-        50 * p.map(n, 0, 2, 0.5, 5)
-      );
 
 
     }
@@ -309,14 +346,14 @@ const Viewer = () => {
 
 
       if (gameIsRunning()) {
-        resetCleanedField();
+        resetCleaningBotState();
         p.frameRate(4);
         drawField(viewerState.field, viewerState.playersMap);
         resetDemo();
       }
 
       if (gameIsDemo()) {
-        resetCleanedField();
+        resetCleaningBotState();
 
         p.frameRate(5);
 
@@ -376,7 +413,8 @@ const Viewer = () => {
         <div class="container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <div class="bg-purple-400 bg-opacity-70	p-5">
             <h1 class="text-white text-center text-l">
-              La prossima vandalizzazione partirà tra <span class="text-xl">{viewerState?.timeToStart / 1000}</span> secondi
+              La prossima vandalizzazione partirà tra <span
+              class="text-xl">{viewerState?.timeToStart / 1000}</span> secondi
             </h1>
           </div>
         </div>

@@ -228,6 +228,10 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
     }
   }
 
+  private playerIsInWaitingList(player: Player) {
+    return this.waitingPlayers.has(p => p.sub === player.sub);
+  }
+
   private handleNewPlayerJoining(player: Player) {
     this.state.players.set(player.sub, player);
     console.log(`${player.name} joined relay`);

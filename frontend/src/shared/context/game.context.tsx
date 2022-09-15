@@ -161,6 +161,7 @@ const GameProvider = (props: GameProviderProps) => {
       console.log("Joined lobby");
 
       store.relayRoom?.onMessage(RELAY_ROOM.QUEUE, (queue: any) => {
+        console.log(`queue`, queue)
         setStore("relayQueue",(prev) => [...queue]);
       });
 
