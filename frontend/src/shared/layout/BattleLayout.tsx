@@ -3,7 +3,7 @@ import {onMount} from "solid-js";
 import {useAuthDispatch, useAuthState} from "../context/auth.context";
 import logo from "../../assets/logo.png";
 import {useGameState} from "../context/game.context";
-import {isInGame, isInQueue} from "../helpers";
+import {isInQueue} from "../helpers";
 
 const BattleLayout = () => {
   const useAuth = useAuthState();

@@ -2,7 +2,7 @@ interface IntroProps {
   onPlayAgain: () => void
 }
 
-const Intro = ({onPlayAgain} : IntroProps) => {
+const Ended = ({onPlayAgain} : IntroProps) => {
   return (
     <div class={"text-white"}>
       <p>
@@ -16,4 +16,4 @@ const Intro = ({onPlayAgain} : IntroProps) => {
   )
 }
 
-export default Intro;
+export default Ended;

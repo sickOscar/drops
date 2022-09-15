@@ -54,13 +54,17 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
   createEffect((prev) => {
     // Avoid animation if someone refreshes the page
     if (playerStats.milestones_reached > 0 && prev !== playerStats.milestones_reached) {
-      setShowLevelUp(true);
-
-      setTimeout(() => {
-        setShowLevelUp(false)
-      }, 700);
+      levelUp();
     }
   }, playerStats.milestones_reached)
+
+  const levelUp = () => {
+    setShowLevelUp(true);
+
+    setTimeout(() => {
+      setShowLevelUp(false)
+    }, 700);
+  }
 
   const handleSliderInput = (value: number, type: SLIDER_TYPE) => {
 

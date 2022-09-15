@@ -1,0 +1,45 @@
+.levelUp__text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    white-space: pre;
+}
+
+.levelUp.visible .levelUp__text-overlay {
+    animation: levelUpTextOverlayAnimation 1s forwards;
+}
+
+/*.boom {*/
+/*    transform: scale(.6);*/
+/*}*/
+
+/*.levelUp.visible .boom__top {*/
+/*    animation: boomAnimation .6s forwards;*/
+/*}*/
+
+/*.levelUp.visible .boom__bottom {*/
+/*    animation: boomAnimation .3s forwards;*/
+/*}*/
+
+/*@keyframes boomAnimation {*/
+/*    0% {*/
+/*        transform: scale(0.5);*/
+/*    }*/
+/*    100% {*/
+/*        transform: scale(1);*/
+/*    }*/
+/*}*/
+
+@keyframes levelUpTextOverlayAnimation {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.7);
+    }
+    100% {
+        opacity: 0;
+    }
+}

@@ -5,18 +5,21 @@ import {useGameDispatch, useGameState} from "../../shared/context/game.context";
 import Queue from "./phases/Queue";
 import Ended from "./phases/Ended";
 import {BattleInfoCurrentPlayer} from "../../models/user";
-import {onMount} from "solid-js";
 import ErrorMessage from "../../shared/components/ErrorMessage";
-import {isGameEnded, isInGame, isInQueue, isLoadingBattleRoom, isLoadingRelayRoom} from "../../shared/helpers";
+import {
+  isGameEnded,
+  isInGame,
+  isInIntro,
+  isInQueue,
+  isLoadingBattleRoom,
+  isLoadingRelayRoom
+} from "../../shared/helpers";
+import Intro from "./phases/Intro";
 
 const Battle = () => {
   const useAuth = useAuthState();
   const gameDispatch = useGameDispatch();
   const gameState = useGameState();
-
-  onMount(() => {
-    joinLobby();
-  })
 
   const joinLobby = () => {
     gameDispatch?.startGameLoop(useAuth?.user as User);
@@ -28,6 +31,13 @@ const Battle = () => {
 
   return (
     <>
+      {
+        isInIntro(gameState) && (
+          <Intro
+            onJoin={joinLobby}
+          />
+        )
+      }
       {
         isInQueue(gameState) && (
           <>

@@ -18,6 +18,7 @@ export const formatNextMatchInSeconds = (milliseconds: number): string => {
   )
 }
 
+export const isInIntro = (gameState: GameStateContext | undefined) => gameState?.ui === "intro";
 export const isInQueue = (gameState: GameStateContext | undefined) => gameState?.ui === "queue";
 export const isInGame = (gameState: GameStateContext | undefined) => gameState?.ui === "playing";
 export const isGameEnded = (gameState: GameStateContext | undefined) => gameState?.ui === "ended";

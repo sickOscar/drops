@@ -22,21 +22,31 @@ const Home = () => {
 
       <div class={"text-white overflow-y-auto"}>
         <p>
-          Immagina un futuro distopico nel quale le Intelligenze Artificiali abbiano dominato ogni mestiere creativo sulla piazza.
+          Corre l’anno 2099.
         </p>
 
         <p class={"mt-5"}>
-          Sei un artista. Sigh, sob.
-          Non sai più come esprimere la tua creatività.
-          Ma sei pur sempre un creativo e vuoi sfogare le tue abilità.
+          Le Intelligenze Artificiali dominano ogni mestiere creativo sulla piazza.
         </p>
 
         <p class={"mt-5"}>
-          L’unica via d’uscita è fare i graffiti in ogni muro della città e riempire tutto con il tuo colore.
+          Sei un artista.
+          <br/>
+          Non sai più come esprimere la creatività.
+          <br/>
+          Argh.
         </p>
 
         <p class={"mt-5"}>
-          Hai i droni poliziotto alle calcagna e devi conquistare più muri possibile cercando di battere gli altri artisti in città che tenteranno di rubarti gli spazi a disposizione.
+          Unica via d’uscita: imbratta ogni muro della città e riempi tutto di colore.
+        </p>
+
+        <p class={"mt-5"}>
+          Attento! Hai i droni poliziotto alle calcagna.
+        </p>
+
+        <p class={"mt-5"}>
+          Conquista più muri che puoi battendo sul tempo gli altri artisti che provano a rubarti i muri disponibili.
         </p>
 
         <p class={"mt-5"}>
@@ -44,7 +54,7 @@ const Home = () => {
         </p>
 
         <p class={"mt-5"}>
-          Armati di bombolette, colori e vai di spray!
+          Armati di bombolette, colori e... vai di spray!
         </p>
       </div>
       <button onClick={authDispatch?.login} class={"h-[3em] mt-3 w-full acquamarine-button"}>

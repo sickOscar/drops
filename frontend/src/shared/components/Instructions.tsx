@@ -9,7 +9,7 @@ const Instructions = () => {
   }
 
   return (
-    <div class={"instructionModal fixed z-50 inset-0 px-5 py-10 flex flex-col text-white bg-[url('/src/assets/bg.png')]"}>
+    <div class={"instructionModal fixed z-50 inset-0 px-5 py-10 flex flex-col text-white bg-[url('/src/assets/bg_scritte.png')] bg-no-repeat bg-cover"}>
 
       <div class={"flex justify-between mb-10 items-center"}>
         <p class={"text-2xl"}>Istruzioni di gioco</p>
