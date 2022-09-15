@@ -146,17 +146,18 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
         </div>
 
         <div class={"flex justify-between items-end px-1"}>
+
           <JoyPadInput
-            value={joyPadStore.research.value}
-            type={SLIDER_TYPE.RESEARCH}
+            value={joyPadStore.military.value}
+            type={SLIDER_TYPE.MILITARY}
             max={100}
             min={0}
-            label={"Velocità di apprendimento"}
-            isDisabled={isInputDisabled(SLIDER_TYPE.RESEARCH)}
+            label={"Potenza spruzzo"}
+            isDisabled={isInputDisabled(SLIDER_TYPE.MILITARY)}
             onChange={handleSliderChange}
             onInput={handleSliderInput}
             onLock={triggerLock}
-            labelFormula={(value) => (`${((value / 100) * DEVELOPMENT_AT_END_ROUND).toFixed(1)}<br>/turn`)}
+            labelFormula={(value) => (`${Math.ceil(value)}<br>&nbsp;`)}
           />
 
           <JoyPadInput
@@ -173,17 +174,21 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
           />
 
           <JoyPadInput
-            value={joyPadStore.military.value}
-            type={SLIDER_TYPE.MILITARY}
+            value={joyPadStore.research.value}
+            type={SLIDER_TYPE.RESEARCH}
             max={100}
             min={0}
-            label={"Potenza spruzzo"}
-            isDisabled={isInputDisabled(SLIDER_TYPE.MILITARY)}
+            label={"Velocità di apprendimento"}
+            isDisabled={isInputDisabled(SLIDER_TYPE.RESEARCH)}
             onChange={handleSliderChange}
             onInput={handleSliderInput}
             onLock={triggerLock}
-            labelFormula={(value) => (`${Math.ceil(value)}<br>&nbsp;`)}
+            labelFormula={(value) => (`${((value / 100) * DEVELOPMENT_AT_END_ROUND).toFixed(1)}<br>/turn`)}
           />
+
+
+
+
         </div>
       </div>
 
