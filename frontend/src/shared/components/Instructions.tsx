@@ -21,15 +21,16 @@ const Instructions = () => {
       <div class={"overflow-y-auto"}>
         <p>Regola i controlli di gioco per conquistare più mattoni possibili e battere gli avversari!</p>
 
-        <p class={"text-grey mt-5"}>Velocità apprendimento:</p>
-        <p>Aumenta questo parametro per avanzare di livello. Più è alto il tuo livello, più velocemente potrai accumulare bombolette.</p>
-
+        <p class={"text-grey mt-5"}>Potenza spruzzo:</p>
+        <p>Aumenta la potenza del tuo spruzzo per coprire il colore degli altri giocatori! Ma attenzione: spruzzare ti costerà bombolette! E' sufficiente una bomboletta per coprire uno spazio vuoto, ma te ne serviranno 10 per coprire un altro colore. Inoltre, potrai coprire il colore del tuo avversario solo se la tua potenza di spruzzo sarà superiore alla sua.</p>
 
         <p class={"text-grey mt-5"}>Capacità di raccolta:</p>
         <p>Aumenta questo parametro per raccogliere più bombolette al secondo. Dovrai spenderne molte per uno spruzzo potente!</p>
 
-        <p class={"text-grey mt-5"}>Potenza spruzzo:</p>
-        <p>Aumenta la potenza del tuo spruzzo per coprire il colore degli altri giocatori! Ma attenzione: spruzzare ti costerà bombolette! Assicurati di averne sempre in abbondanza per battere gli altri vandali!</p>
+        <p class={"text-grey mt-5"}>Velocità apprendimento:</p>
+        <p>Aumenta questo parametro per avanzare di livello. Più è alto il tuo livello, più velocemente potrai accumulare bombolette e più forte spruzzerai.</p>
+
+
       </div>
 
       <button onClick={close} class={"mt-auto h-[3em] mt-3 w-full acquamarine-button"}>

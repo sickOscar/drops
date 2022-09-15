@@ -8,234 +8,255 @@ import {restoreTruncatedMessage} from "./message-handling";
 
 export class BattleRoom extends Room<GameState> {
 
-    autoDispose = false;
+  autoDispose = false;
 
-    static playerIndex = 1;
+  static playerIndex = 1;
 
-    // When room is initialized
-    async onCreate(options: any) {
-        this.setState(new GameState());
+  // When room is initialized
+  async onCreate(options: any) {
+    this.setState(new GameState());
 
-        let lastRemainingToken = "";
+    let lastRemainingToken = "";
 
-        const socket = await coreListeningSocket
-        socket.on('data', (data) => {
+    const socket = await coreListeningSocket
+    socket.on('data', (data) => {
 
-            // more than one message may be mixed on a single send due to how socket is buffered
-            const incomingMessages = data.toString().split('\n');
+      // more than one message may be mixed on a single send due to how socket is buffered
+      const incomingMessages = data.toString().split('\n');
 
-            lastRemainingToken = restoreTruncatedMessage(incomingMessages, lastRemainingToken);
+      lastRemainingToken = restoreTruncatedMessage(incomingMessages, lastRemainingToken);
 
-            // console.log(`incomingMessage`, incomingMessages)
+      // console.log(`incomingMessage`, incomingMessages)
 
-            incomingMessages
-                .filter(message => message.length > 0)
-                .forEach(message => {
+      incomingMessages
+        .filter(message => message.length > 0)
+        .forEach(message => {
 
-                    // remove trailing |
-                    message = message.slice(0, -1);
+          // remove trailing |
+          message = message.slice(0, -1);
 
-                    // console.log(`message`, message)
+          // console.log(`message`, message)
 
-                    if (message.startsWith("*players:")) {
+          if (message.startsWith("*players:")) {
 
-                        this.state.time = (parseInt(this.state.time) - 1).toString();
+            this.state.time = (parseInt(this.state.time) - 1).toString();
 
-                        const playersString = message.substring("*players:".length);
-                        playersString.split('/')
-                            .forEach(playerString => {
+            const playersString = message.substring("*players:".length);
+            playersString.split('/')
+              .forEach(playerString => {
 
-                                const parsedPlayer:any = JSON.parse(playerString);
-                                let player:Player;
-                                this.state.players.forEach((p, key) => {
-                                    if (p.id === parsedPlayer.id) {
-                                        player = p;
-                                    }
-                                });
-                                
-                                if (player) {
-                                    player.resources = parsedPlayer.resources;
-                                    player.score = parsedPlayer.owned_cells;
-                                    player.development = parsedPlayer.development;
-                                    player.milestones_reached = parsedPlayer.milestones_reached;
-                                }
+                const parsedPlayer: any = JSON.parse(playerString);
+                let player: Player;
+                this.state.players.forEach((p, key) => {
+                  if (p.id === parsedPlayer.id) {
+                    player = p;
+                  }
+                });
 
-                            })
-
-                        // send to viewwer
-                        const viewerSocket = Globals.viewerSocket;
-                        if (!viewerSocket) {
-                            return;
-                        }
-
-
-                        const playersList = Object.values(this.state.players.toJSON());
-                        viewerSocket.emit('players', playersList);
-                        viewerSocket.emit('time', this.state.time);
-
-                        return;
-
-                    }
-
-                    if (message.startsWith("*field:")) {
-
-                        const viewerSocket = Globals.viewerSocket;
-
-                        if (!viewerSocket) {
-                            return;
-                        }
-
-                        viewerSocket.emit('field', message.substring("*field:".length));
-                        return null;
-                    }
-
-                    if (message.startsWith("*endgame")) {
-                        console.log('ENDGAME')
-                        this.state.gameRunning = false;
-                        this.broadcast('endgame');
-
-                        this.state.players.clear();
-
-                        this.presence.publish('battle_state', 'endgame');
-
-                    }
-
-                })
-
-
-        })
-
-
-        this.onMessage("action", (client: Client, message: String) => {
-
-            const player = this.state.players.get(client.sessionId);
-
-            coreSendingSocket.then(socket => {
-                const toSend = `|${player.id}|(${message})`;
-                console.log(`toSend`, toSend)
-                socket.write(`${toSend}\n`);
-
-            })
-
-        })
-
-        this.onMessage("identity", (client, data) => {
-
-            const [sub, name, avatar] = data.split("#");
-            console.log(`BATTLE: got player identity`, sub, name, avatar);
-
-            let existingPlayer:Player;
-            this.state.players.forEach((p, key) => {
-                if (p.sub === sub) {
-                    existingPlayer = p;
-                }
-            })
-            
-
-            if (existingPlayer) {
-
-                console.log(`existingPlayer`, existingPlayer)
-                this.state.players.set(client.sessionId, existingPlayer.clone());
-                if (client.sessionId !== existingPlayer.sessionId) {
-                    this.state.players.delete(existingPlayer.sessionId);
+                if (player) {
+                  player.resources = parsedPlayer.resources;
+                  player.score = parsedPlayer.owned_cells;
+                  player.development = parsedPlayer.development;
+                  player.milestones_reached = parsedPlayer.milestones_reached;
                 }
 
-                client.send('battle_start');
+              })
 
-            } else {
-
-                const player = new Player();
-                player.id = BattleRoom.playerIndex++;
-                player.sessionId = client.sessionId;
-                player.name = name;
-                player.avatar = avatar;
-                player.sub = sub;
-                player.connected = true;
-
-                this.state.players.set(client.sessionId, player);
-
-                client.send(this.state.players.size);
-
-                if (this.state.players.size === Globals.playersForThisGame) {
-                    this.startGame();
-                }
-
+            // send to viewwer
+            const viewerSocket = Globals.viewerSocket;
+            if (!viewerSocket) {
+              return;
             }
 
+
+            const playersList = Object.values(this.state.players.toJSON());
+            viewerSocket.emit('players', playersList);
+            viewerSocket.emit('time', this.state.time);
+
+            return;
+
+          }
+
+          if (message.startsWith("*field:")) {
+
+            const viewerSocket = Globals.viewerSocket;
+
+            if (!viewerSocket) {
+              return;
+            }
+
+            viewerSocket.emit('field', message.substring("*field:".length));
+            return null;
+          }
+
+          if (message.startsWith("*endgame")) {
+            console.log('ENDGAME')
+            this.state.gameRunning = false;
+            this.broadcast('endgame');
+
+            this.state.players.clear();
+
+            this.presence.publish('battle_state', 'endgame');
+
+          }
+
         })
 
-    }
+
+    })
 
 
-    private startGame() {
-        this.broadcast('battle_start');
+    this.onMessage("action", (client: Client, message: String) => {
 
-        if (!this.state.gameRunning) {
+      const player = this.state.players.get(client.sessionId);
 
-            this.state.gameRunning = true;
-            this.state.time = "600"
+      coreSendingSocket.then(socket => {
+        const toSend = `|${player.id}|(${message})`;
+        console.log(`toSend`, toSend)
+        socket.write(`${toSend}\n`);
 
-            const colors = [
-                '#4EC3CB',
-                '#F2C94C',
-                '#FF9457',
-                '#FF6694',
-                '#9F0B76',
-                '#9896A5',
-            ];
+      })
 
-            let index = 0;
-            this.state.players.forEach((p, key) => {
-                p.color = colors[index % colors.length];
-                index++;
-            })
+    })
 
-            coreSendingSocket.then(socket => {
-                const playerIds = [];
-                this.state.players.forEach(player => {
-                    playerIds.push(player.id);
-                })
-                const startingString = `play:${playerIds.join('|')}`;
-                console.log(`Starting game : ${startingString}`)
-                socket.write(startingString);
-            })
+    this.onMessage("identity", (client, data) => {
+
+      const [sub, name, avatar] = data.split("#");
+      console.log(`BATTLE: got player identity`, sub, name, avatar);
+
+      let existingPlayer: Player;
+      this.state.players.forEach((p, key) => {
+        if (p.sub === sub) {
+          existingPlayer = p;
         }
-    }
+      })
 
-    onAuth(client: Client, options: any, request: http.IncomingMessage) {
-        return true;
-    }
 
-    async onJoin(client: Client, options: any, auth: any) {
-    }
+      if (existingPlayer) {
 
-    // When a client leaves the room
-    async onLeave(client: Client, consented: boolean) {
-        const player = this.state.players.get(client.sessionId);
+        existingPlayer.connected = true;
+        console.log(`existingPlayer`, existingPlayer)
+        this.state.players.set(client.sessionId, existingPlayer.clone());
+        if (client.sessionId !== existingPlayer.sessionId) {
+          this.state.players.delete(existingPlayer.sessionId);
+        }
+
+        client.send('battle_start');
+
+      } else {
+
+        const player = new Player();
+        player.id = BattleRoom.playerIndex++;
+        player.sessionId = client.sessionId;
+        player.name = name;
+        player.avatar = avatar;
+        player.sub = sub;
+        player.connected = true;
+
+        this.state.players.set(client.sessionId, player);
+
+        client.send(this.state.players.size);
+
+        // if (this.state.players.size === Globals.playersForThisGame) {
+        //     this.startGame();
+        // }
+
+      }
+
+    })
+
+    this.presence.subscribe('battle_start', (players:Set<Player>) => {
+      
+      players.forEach(p => {
+        const player = new Player();
+        player.id = BattleRoom.playerIndex++;
+        player.sessionId = p.sessionId;
+        player.name = p.name;
+        player.avatar = p.avatar;
+        player.sub = p.sub;
         player.connected = false;
+        
+        // console.log(`player`, player)
 
-        try {
-            if (consented) {
-                throw new Error("consented leave");
-            }
+        this.state.players.set(p.sessionId, player);
+      })
 
-            // allow disconnected client to reconnect into this room until 20 seconds
-            await this.allowReconnection(client, 60);
+      console.log(`battle players`, Array.from(players)[0])
+      this.startGame();
+    })
 
-            // client returned! let's re-activate it.
-            player.connected = true;
 
-        } catch (e) {
-            console.log(`client disconnected nd removed`, player.sessionId);
-        }
+  }
 
+
+  private startGame() {
+    this.broadcast('battle_start');
+
+    if (!this.state.gameRunning) {
+
+      this.state.gameRunning = true;
+      this.state.time = "600"
+
+      const colors = [
+        '#4EC3CB',
+        '#F2C94C',
+        '#FF9457',
+        '#FF6694',
+        '#9F0B76',
+        '#9896A5',
+      ];
+
+      let index = 0;
+      this.state.players.forEach((p, key) => {
+        p.color = colors[index % colors.length];
+        index++;
+      })
+
+      coreSendingSocket.then(socket => {
+        const playerIds = [];
+        this.state.players.forEach(player => {
+          playerIds.push(player.id);
+        })
+        const startingString = `play:${playerIds.join('|')}`;
+        console.log(`Starting game : ${startingString}`)
+        socket.write(startingString);
+      })
+    }
+  }
+
+  onAuth(client: Client, options: any, request: http.IncomingMessage) {
+    return true;
+  }
+
+  async onJoin(client: Client, options: any, auth: any) {
+  }
+
+  // When a client leaves the room
+  async onLeave(client: Client, consented: boolean) {
+    const player = this.state.players.get(client.sessionId);
+    player.connected = false;
+
+    try {
+      if (consented) {
+        throw new Error("consented leave");
+      }
+
+      // allow disconnected client to reconnect into this room until 20 seconds
+      await this.allowReconnection(client, 60);
+
+      // client returned! let's re-activate it.
+      player.connected = true;
+
+    } catch (e) {
+      console.log(`client disconnected nd removed`, player.sessionId);
     }
 
-    // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
-    onDispose() {
-        console.log('onDispose battle');
-    }
+  }
 
+  // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
+  onDispose() {
+    console.log('onDispose battle');
+  }
 
 
 }

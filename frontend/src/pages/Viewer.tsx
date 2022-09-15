@@ -228,7 +228,7 @@ const Viewer = () => {
         }
 
         const currentBotX = middle + Math.sin(p.frameCount / 10) * ((BOARD_SIZE * CELL_SIZE) / 2 - 50);
-        const currentBotYIndex = (p.frameCount - cleaningBotFrameOffset) % BOARD_SIZE;
+        const currentBotYIndex = (p.frameCount - cleaningBotFrameOffset) / 2 % BOARD_SIZE;
 
         cleaningBotPosition = [currentBotX, currentBotYIndex * CELL_SIZE];
 
@@ -255,12 +255,15 @@ const Viewer = () => {
           )
         }
 
+        p.translate(cleaningBotPosition[0], cleaningBotPosition[1]);
+        p.rotate(Math.cos(p.frameCount / 10) * 0.5);
         p.image(botImage,
-          currentBotX - 40,
-          currentBotYIndex * CELL_SIZE - 40,
+          -80,
+          -40,
           50 * p.map(n, 0, 2, 2, 10),
           50 * p.map(n, 0, 2, 2, 10)
         );
+        p.translate(-cleaningBotPosition[0], -cleaningBotPosition[1]);
       }
 
 
@@ -297,7 +300,7 @@ const Viewer = () => {
     }
 
 
-    function updateCell(i: number, j: number) {
+    function updateDemoCell(i: number, j: number) {
       if (demoField[i][j] === 0) {
         return;
       }
@@ -322,6 +325,7 @@ const Viewer = () => {
         if (
           thisCellPlayer.m > enemyCellPlayer.m
           && thisCellPlayer.res > 10
+          && Math.random() > 0.3
         ) {
           thisCellPlayer.res = thisCellPlayer.res - 10;
           demoField[randomI][randomJ] = demoField[i][j];
@@ -359,7 +363,7 @@ const Viewer = () => {
 
         for (let i = 0; i < demoField.length; i++) {
           for (let j = 0; j < demoField[i].length; j++) {
-            updateCell(i, j);
+            updateDemoCell(i, j);
           }
         }
 

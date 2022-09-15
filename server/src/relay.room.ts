@@ -12,7 +12,7 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
   autoDispose = false;
 
   waitingPlayers = new Queue<Player>();
-  playingPlayers = new Set<string>();
+  playingPlayers = new Set<Player>();
 
   waitingListMissingTime = 0;
   waitingListTimeout: NodeJS.Timeout;
@@ -183,6 +183,7 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
   }
 
   private startNewGame() {
+    console.log('Starting new game...');
     this.state.gameRunning = true;
     this.endBroadcastTimer();
 
@@ -196,17 +197,20 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
 
     for (let i = 0; i < waiting.length; i++) {
 
-      const player = waiting[i];
+      const player:Player = waiting[i];
 
       if (!player) {
         continue;
       }
 
       if (i < Globals.MAX_PLAYERS_NUMBER) {
-        this.playingPlayers.add(player.sub);
+        this.playingPlayers.add(player);
 
         const involvedClient = this.clients.find(client => client.sessionId === player.sessionId)
-        involvedClient.send("battle_ready");
+        if (involvedClient) {
+          involvedClient.send("battle_ready");
+        }
+
 
         // addedPlayers++;
         // if (addedPlayers === Globals.MAX_PLAYERS_NUMBER) {
@@ -216,7 +220,11 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
         newWaitingPlayersQueue.enqueue(player);
       }
 
+
+
     }
+
+    this.presence.publish('battle_start', this.playingPlayers);
 
     this.waitingPlayers = newWaitingPlayersQueue;
 
@@ -247,7 +255,8 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
   }
 
   private playerShouldEnterBattleOnConnect(player: Player) {
-    return this.isGameRunning() && this.playingPlayers.has(player.sub);
+    return this.isGameRunning() &&
+      Array.from(this.playingPlayers).filter(p => p.sub === player.sub).length > 0;
   }
 
   private handlePlayerReconnection(player: Player, client: Client) {
