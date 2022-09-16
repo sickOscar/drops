@@ -21,6 +21,10 @@ const Viewer = () => {
     return viewerState?.gameState === ViewerStates.DEMO;
   }
 
+  const gameIsOver = () => {
+    return viewerState?.gameState === ViewerStates.OVER;
+  }
+
   const sketch = (p: p5) => {
 
     const sqrtSide = Math.sqrt(2);
@@ -388,9 +392,15 @@ const Viewer = () => {
 
       }
 
-      if (gameIsCountdown()) {
+      if (gameIsCountdown() || gameIsOver()) {
         p.frameRate(20);
-        drawField(demoField, demoPlayers);
+
+        if (gameIsCountdown()) {
+          drawField(demoField, demoPlayers);
+        } else {
+          drawField(viewerState.field, viewerState.playersMap);
+        }
+
         moveCleaningBot();
       }
 

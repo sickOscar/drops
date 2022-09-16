@@ -97,6 +97,12 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
           this.startBroadcastTimer();
         }
 
+        const viewerSocket = Globals.viewerSocket;
+        if (!viewerSocket) {
+          return;
+        }
+
+        viewerSocket.emit('endgame');
       }
     })
 

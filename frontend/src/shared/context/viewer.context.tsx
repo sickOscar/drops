@@ -22,6 +22,7 @@ export enum ViewerStates {
   RUNNING = "RUNNING",
   DEMO = "DEMO",
   COUNTDOWN = "COUNTDOWN",
+  OVER = "OVER"
 }
 
 interface ViewerProviderProps {
@@ -93,7 +94,7 @@ const ViewerProvider = (props: ViewerProviderProps) => {
         clearTimeout(runningTimeout);
         runningTimeout = setTimeout(() => {
           setStore("gameState", ViewerStates.DEMO);
-        }, 5000);
+        }, 15000);
 
       } catch (err) {
         console.log("Failed parsing field data");
@@ -122,6 +123,10 @@ const ViewerProvider = (props: ViewerProviderProps) => {
       clearTimeout(runningTimeout);
       setStore("gameState", ViewerStates.COUNTDOWN);
     });
+
+    store.socket?.on(VIEWER_SOCKETS.ENDGAME, () => {
+      setStore("gameState", ViewerStates.OVER);
+    })
   }
 
   return (

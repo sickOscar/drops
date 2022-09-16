@@ -28,6 +28,7 @@ const VIEWER_SOCKETS = {
   TIME: "time",
   PLAYERS: "players",
   TIME_TO_START: "timer",
+  ENDGAME: "endgame"
 }
 
 const LOCALSTORAGE = {
