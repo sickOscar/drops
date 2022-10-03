@@ -25,9 +25,9 @@ const JoyPadInput = (props: JoyPadInputProps) => {
     props.onInput(parseInt(e.target.value, 10), props.type);
   }
 
-  // createEffect(() => {
-  //   setLabelHeight(props.value);
-  // })
+  createEffect(() => {
+    setLabelHeight(props.value);
+  })
 
   const labelStyle = (): object => {
     return { "top": `${100 - Math.floor(labelHeight())}px` };
