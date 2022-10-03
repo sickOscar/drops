@@ -18,8 +18,7 @@ services:
       - sockets:/tmp/sockets
     depends_on:
       - server
-    networks:
-      - drops
+    network_mode: "host"
 
   server:
     image: drops/server
@@ -29,14 +28,12 @@ services:
       dockerfile: Dockerfile
     volumes:
       - sockets:/tmp/sockets
-    ports:
-      - "7000:7000"
+
     environment:
       - SOCKET_TO_NODE=/tmp/sockets/drops_to_node.sock
       - SOCKET_FROM_NODE=/tmp/sockets/drops_from_node.sock
       - NODE_ENV=production
-    networks:
-      - drops
+    network_mode: "host"
 
   frontend:
     image: drops/frontend
@@ -44,24 +41,20 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile
-    ports:
-      - "7002:7002"
+
     environment:
       - VITE_MULTIPLAYER_HOST_GAME=ws://localhost/server
-    networks:
-      - drops
+    network_mode: "host"
 
   http:
     image: nginx
-    ports:
-      - "80:80"
+
     volumes:
       - ./conf/nginx:/etc/nginx/conf.d
-      - ./frontend/dist:/usr/share/nginx/html
+#      - ./frontend/dist:/usr/share/nginx/html
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-    networks:
-      - drops
+    network_mode: "host"
