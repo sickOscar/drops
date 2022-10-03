@@ -25,9 +25,9 @@ const JoyPadInput = (props: JoyPadInputProps) => {
     props.onInput(parseInt(e.target.value, 10), props.type);
   }
 
-  createEffect(() => {
-    setLabelHeight(props.value);
-  })
+  // createEffect(() => {
+  //   setLabelHeight(props.value);
+  // })
 
   const labelStyle = (): object => {
     return { "top": `${100 - Math.floor(labelHeight())}px` };
@@ -41,7 +41,7 @@ const JoyPadInput = (props: JoyPadInputProps) => {
     <div class={"joyPadInput flex flex-col flex-1 items-center text-center relative"}>
       <label class="text-grey break-words" for={props.type}>{props.label}</label>
       <div class={"joyPadInput__range-container flex flex-col border-1 rounded-[45px] bg-semitransparent-grey mx-auto w-[5.5rem] h-[35vh] p-4 mt-3 relative justify-between items-center main-shadow"}>
-        <span class={`text-white absolute z-30`} style={labelStyle()} innerHTML={props.labelFormula(props.value)}></span>
+        <span class={`text-white z-30`} innerHTML={props.labelFormula(props.value)}></span>
         <input onInput={handleInputChange}
            onChange={props.onChange}
            type="range"
