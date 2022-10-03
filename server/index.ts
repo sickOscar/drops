@@ -8,12 +8,14 @@ import express from "express";
 import {Server as SocketIoServer} from "socket.io"
 import {Globals} from "./src/global";
 import {createServer} from "https";
+import cors from "cors";
 
 const multiplayerServerPort = Number(process.env.port) || 7000;
 const viewerServerPort = Number(process.env.port) || 7001;
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 async function startGameServer() {
 
