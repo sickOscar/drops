@@ -136,7 +136,7 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
           <span class={"text-3xl"}>{playerStats.score}</span>
         </div>
       </div>
-      <p class={"mt-5 mb-2 text-white text-xl"}>
+      <p class={"mt-3 mb-2 text-white text-xl"}>
         Livello {playerStats.milestones_reached + 1}: {LEVELS[playerStats.milestones_reached + 1]}
       </p>
       <div class={"flex gap-1"}>
@@ -149,10 +149,10 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
         </For>
       </div>
 
-      <div class={"blue-rounded-container pb-10 mt-auto mx-[-1rem] mb-[-1rem]"}>
+      <div class={"blue-rounded-container pb-10 mb-[-1rem]"}>
 
         <div class={"flex justify-between items-center px-5 mb-3"}>
-          <span class={"text-white"}>Controlli di gioco</span>
+          <span class={"text-white"}>Controlli</span>
           <InstructionButton/>
         </div>
 
