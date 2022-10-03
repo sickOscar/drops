@@ -117,227 +117,227 @@ const web = new aws.ec2.Instance(`${pulumi.getStack()}-server`, {
   userData: fs.readFileSync("server-init.sh", "utf8"),
 });
 
-const responseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(`${pulumi.getStack()}-response-headers`, {
-  corsConfig: {
-    accessControlAllowCredentials: false,
-    accessControlAllowHeaders: {
-      items: ["*"],
-    },
-    accessControlAllowMethods: {
-      items: ["GET", "POST", "HEAD", "OPTIONS"],
-    },
-    accessControlAllowOrigins: {
-      items: ["*"],
-    },
-    originOverride: true
-  }
-})
-
-const originId = `${process.env.SERVER_DNS}`;
-const distribution = new aws.cloudfront.Distribution('server-distribution', {
-  origins: [{
-    domainName: originId,
-    originId: originId,
-    customOriginConfig: {
-      httpPort: 80,
-      httpsPort: 443,
-      originProtocolPolicy: 'http-only',
-      originSslProtocols: ['TLSv1.2']
-    }
-  }],
-  enabled: true,
-  isIpv6Enabled: false,
-  defaultCacheBehavior: {
-    compress: true,
-    allowedMethods: [
-      "DELETE",
-      "GET",
-      "HEAD",
-      "OPTIONS",
-      "PATCH",
-      "POST",
-      "PUT",
-    ],
-    cachedMethods: [
-      "GET",
-      "HEAD",
-    ],
-    targetOriginId: originId,
-    // responseHeadersPolicyId: responseHeadersPolicy.id,
-    forwardedValues: {
-      headers: ["*"],
-      queryString: true,
-      cookies: {
-        forward: "all",
-      },
-    },
-    viewerProtocolPolicy: "redirect-to-https",
-    minTtl: 0,
-    defaultTtl: 0,
-    maxTtl: 0,
-  },
-  restrictions: {
-    geoRestriction: {
-      restrictionType: "none",
-    }
-  },
-  aliases: [
-    "duel-server.codeinthedark.interlogica.it"
-  ],
-  viewerCertificate: {
-    // cloudfrontDefaultCertificate: true,
-    acmCertificateArn: process.env.CERTIFICATE_ARN,
-    sslSupportMethod: "sni-only",
-    minimumProtocolVersion: "TLSv1.2_2021",
-  }
-});
-
-
-const bucket = new aws.s3.Bucket(`www-frontend-${pulumi.getStack()}`, {
-  acl: "public-read",
-  // website: {
-  //   indexDocument: "index.html",
-  //   errorDocument: "404.html"
-  // },
-  requestPayer: "BucketOwner",
-  // websiteDomain: "s3-website-eu-west-1.amazonaws.com",
-  // websiteEndpoint: "ems-production-application.s3-website-eu-west-1.amazonaws.com",
-  corsRules: [{
-    allowedHeaders: ["*"],
-    allowedMethods: [
-      "GET"
-    ],
-    allowedOrigins: ["*"],
-    exposeHeaders: ["ETag"],
-    maxAgeSeconds: 3000,
-  }]
-});
-
-new aws.s3.BucketPolicy(`${pulumi.getStack()}-bucket-policy`, {
-  bucket: bucket.id,
-  policy: {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Sid": "PublicReadGetObject",
-        "Effect": "Allow",
-        "Principal": "*",
-        "Action": [
-          "s3:GetObject"
-        ],
-        "Resource": [
-          pulumi.interpolate`${bucket.arn}/*`
-        ]
-      }
-    ]
-  },
-})
+// const responseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(`${pulumi.getStack()}-response-headers`, {
+//   corsConfig: {
+//     accessControlAllowCredentials: false,
+//     accessControlAllowHeaders: {
+//       items: ["*"],
+//     },
+//     accessControlAllowMethods: {
+//       items: ["GET", "POST", "HEAD", "OPTIONS"],
+//     },
+//     accessControlAllowOrigins: {
+//       items: ["*"],
+//     },
+//     originOverride: true
+//   }
+// })
 
 // const originId = `${process.env.SERVER_DNS}`;
-const s3OriginId = "duel.codeinthedark.interlogica.it";
-const frontendDistribution = new aws.cloudfront.Distribution('frontend-distribution', {
-  origins: [
-    {
-      domainName: bucket.bucketRegionalDomainName,
-      originId: s3OriginId,
-    },
-    {
-      domainName: originId,
-      originId: originId,
-      customOriginConfig: {
-        httpPort: 80,
-        httpsPort: 443,
-        originProtocolPolicy: 'http-only',
-        originSslProtocols: ['TLSv1.2']
-      }
-    }],
-  enabled: true,
-  isIpv6Enabled: false,
-  priceClass: "PriceClass_100",
-  defaultRootObject: "index.html",
-  customErrorResponses: [
-    {
-      errorCode: 404,
-      errorCachingMinTtl: 300,
-      responseCode: 200,
-      responsePagePath: "/index.html",
-    }
-  ],
-  // orderedCacheBehaviors:  [
-  //   {
-  //     pathPattern: "/api/*",
-  //     compress: false,
-  //     allowedMethods: [
-  //       "DELETE",
-  //       "GET",
-  //       "HEAD",
-  //       "OPTIONS",
-  //       "PATCH",
-  //       "POST",
-  //       "PUT",
-  //       ],
-  //     cachedMethods: [
-  //       "GET",
-  //       "HEAD",
-  //       "OPTIONS"
-  //       ],
-  //     targetOriginId: originId,
-  //     // responseHeadersPolicyId: responseHeadersPolicy.id,
-  //     forwardedValues: {
-  //       queryString: true,
-  //       cookies: {
-  //         forward: "all",
-  //       }
-  //     },
-  //     viewerProtocolPolicy: "redirect-to-https",
-  //     minTtl: 0,
-  //     defaultTtl: 0,
-  //     maxTtl: 0
-  //   }
-  // ],
-  defaultCacheBehavior: {
-    compress: true,
-    viewerProtocolPolicy: "redirect-to-https",
-    allowedMethods: [
-      "DELETE",
-      "GET",
-      "HEAD",
-      "OPTIONS",
-      "PATCH",
-      "POST",
-      "PUT",
-    ],
-    cachedMethods: [
-      "GET",
-      "HEAD",
-    ],
+// const distribution = new aws.cloudfront.Distribution('server-distribution', {
+//   origins: [{
+//     domainName: originId,
+//     originId: originId,
+//     customOriginConfig: {
+//       httpPort: 80,
+//       httpsPort: 443,
+//       originProtocolPolicy: 'http-only',
+//       originSslProtocols: ['TLSv1.2']
+//     }
+//   }],
+//   enabled: true,
+//   isIpv6Enabled: false,
+//   defaultCacheBehavior: {
+//     compress: true,
+//     allowedMethods: [
+//       "DELETE",
+//       "GET",
+//       "HEAD",
+//       "OPTIONS",
+//       "PATCH",
+//       "POST",
+//       "PUT",
+//     ],
+//     cachedMethods: [
+//       "GET",
+//       "HEAD",
+//     ],
+//     targetOriginId: originId,
+//     // responseHeadersPolicyId: responseHeadersPolicy.id,
+//     forwardedValues: {
+//       headers: ["*"],
+//       queryString: true,
+//       cookies: {
+//         forward: "all",
+//       },
+//     },
+//     viewerProtocolPolicy: "redirect-to-https",
+//     minTtl: 0,
+//     defaultTtl: 0,
+//     maxTtl: 0,
+//   },
+//   restrictions: {
+//     geoRestriction: {
+//       restrictionType: "none",
+//     }
+//   },
+//   aliases: [
+//     "duel-server.codeinthedark.interlogica.it"
+//   ],
+//   viewerCertificate: {
+//     // cloudfrontDefaultCertificate: true,
+//     acmCertificateArn: process.env.CERTIFICATE_ARN,
+//     sslSupportMethod: "sni-only",
+//     minimumProtocolVersion: "TLSv1.2_2021",
+//   }
+// });
 
-    targetOriginId: s3OriginId,
-    forwardedValues: {
-      queryString: false,
-      cookies: {
-        forward: "none",
-      },
-    },
-    minTtl: 0,
-    defaultTtl: 3600,
-    maxTtl: 86400,
-  },
-  restrictions: {
-    geoRestriction: {
-      restrictionType: "none",
-    }
-  },
-  aliases: [
-    // "duel.codeinthedark.interlogica.it"
-  ],
-  viewerCertificate: {
-    cloudfrontDefaultCertificate: true,
-    // acmCertificateArn: process.env.CERTIFICATE_ARN,
-    // sslSupportMethod: "sni-only",
-    // minimumProtocolVersion: "TLSv1.2_2021"
-  }
-});
+
+// const bucket = new aws.s3.Bucket(`www-frontend-${pulumi.getStack()}`, {
+//   acl: "public-read",
+//   // website: {
+//   //   indexDocument: "index.html",
+//   //   errorDocument: "404.html"
+//   // },
+//   requestPayer: "BucketOwner",
+//   // websiteDomain: "s3-website-eu-west-1.amazonaws.com",
+//   // websiteEndpoint: "ems-production-application.s3-website-eu-west-1.amazonaws.com",
+//   corsRules: [{
+//     allowedHeaders: ["*"],
+//     allowedMethods: [
+//       "GET"
+//     ],
+//     allowedOrigins: ["*"],
+//     exposeHeaders: ["ETag"],
+//     maxAgeSeconds: 3000,
+//   }]
+// });
+//
+// new aws.s3.BucketPolicy(`${pulumi.getStack()}-bucket-policy`, {
+//   bucket: bucket.id,
+//   policy: {
+//     "Version": "2012-10-17",
+//     "Statement": [
+//       {
+//         "Sid": "PublicReadGetObject",
+//         "Effect": "Allow",
+//         "Principal": "*",
+//         "Action": [
+//           "s3:GetObject"
+//         ],
+//         "Resource": [
+//           pulumi.interpolate`${bucket.arn}/*`
+//         ]
+//       }
+//     ]
+//   },
+// })
+
+// const originId = `${process.env.SERVER_DNS}`;
+// const s3OriginId = "duel.codeinthedark.interlogica.it";
+// const frontendDistribution = new aws.cloudfront.Distribution('frontend-distribution', {
+//   origins: [
+//     {
+//       domainName: bucket.bucketRegionalDomainName,
+//       originId: s3OriginId,
+//     },
+//     {
+//       domainName: originId,
+//       originId: originId,
+//       customOriginConfig: {
+//         httpPort: 80,
+//         httpsPort: 443,
+//         originProtocolPolicy: 'http-only',
+//         originSslProtocols: ['TLSv1.2']
+//       }
+//     }],
+//   enabled: true,
+//   isIpv6Enabled: false,
+//   priceClass: "PriceClass_100",
+//   defaultRootObject: "index.html",
+//   customErrorResponses: [
+//     {
+//       errorCode: 404,
+//       errorCachingMinTtl: 300,
+//       responseCode: 200,
+//       responsePagePath: "/index.html",
+//     }
+//   ],
+//   // orderedCacheBehaviors:  [
+//   //   {
+//   //     pathPattern: "/api/*",
+//   //     compress: false,
+//   //     allowedMethods: [
+//   //       "DELETE",
+//   //       "GET",
+//   //       "HEAD",
+//   //       "OPTIONS",
+//   //       "PATCH",
+//   //       "POST",
+//   //       "PUT",
+//   //       ],
+//   //     cachedMethods: [
+//   //       "GET",
+//   //       "HEAD",
+//   //       "OPTIONS"
+//   //       ],
+//   //     targetOriginId: originId,
+//   //     // responseHeadersPolicyId: responseHeadersPolicy.id,
+//   //     forwardedValues: {
+//   //       queryString: true,
+//   //       cookies: {
+//   //         forward: "all",
+//   //       }
+//   //     },
+//   //     viewerProtocolPolicy: "redirect-to-https",
+//   //     minTtl: 0,
+//   //     defaultTtl: 0,
+//   //     maxTtl: 0
+//   //   }
+//   // ],
+//   defaultCacheBehavior: {
+//     compress: true,
+//     viewerProtocolPolicy: "redirect-to-https",
+//     allowedMethods: [
+//       "DELETE",
+//       "GET",
+//       "HEAD",
+//       "OPTIONS",
+//       "PATCH",
+//       "POST",
+//       "PUT",
+//     ],
+//     cachedMethods: [
+//       "GET",
+//       "HEAD",
+//     ],
+//
+//     targetOriginId: s3OriginId,
+//     forwardedValues: {
+//       queryString: false,
+//       cookies: {
+//         forward: "none",
+//       },
+//     },
+//     minTtl: 0,
+//     defaultTtl: 3600,
+//     maxTtl: 86400,
+//   },
+//   restrictions: {
+//     geoRestriction: {
+//       restrictionType: "none",
+//     }
+//   },
+//   aliases: [
+//     // "duel.codeinthedark.interlogica.it"
+//   ],
+//   viewerCertificate: {
+//     cloudfrontDefaultCertificate: true,
+//     // acmCertificateArn: process.env.CERTIFICATE_ARN,
+//     // sslSupportMethod: "sni-only",
+//     // minimumProtocolVersion: "TLSv1.2_2021"
+//   }
+// });
 
 
 export const instanceIp = web.publicIp;

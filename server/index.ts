@@ -11,17 +11,13 @@ import {Globals} from "./src/global";
 const multiplayerServerPort = Number(process.env.port) || 7000;
 const viewerServerPort = Number(process.env.port) || 7001;
 
-const app = express();
-app.use(express.json());
-const server = http.createServer(app);
+
 
 async function startGameServer() {
 
     const gameServer = new Server({
         // server: createServer(app),
-        transport: new WebSocketTransport({
-          server
-        })
+        transport: new WebSocketTransport({})
     });
 
     gameServer.define('battle', BattleRoom);
@@ -36,8 +32,9 @@ async function startGameServer() {
 }
 
 async function startViewerServer() {
-
-
+    const app = express();
+    app.use(express.json());
+    const server = http.createServer(app);
     const io = new SocketIoServer(server, {
         path: process.env.NODE_ENV === 'production' ? "/viewersocket/socket.io" : "",
         cors: {

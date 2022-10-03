@@ -38,17 +38,30 @@ services:
     networks:
       - drops
 
+  frontend:
+    image: drops/frontend
+    container_name: frontend
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "7002:7002"
+    environment:
+      - VITE_MULTIPLAYER_HOST_GAME=ws://localhost/server
+    networks:
+      - drops
+
   http:
     image: nginx
     ports:
       - "80:80"
     volumes:
       - ./conf/nginx:/etc/nginx/conf.d
-      - ./server/static/:/usr/share/nginx/html
+      - ./frontend/dist:/usr/share/nginx/html
     logging:
-        driver: "json-file"
-        options:
-            max-size: "10m"
-            max-file: "3"
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - drops
