@@ -117,80 +117,80 @@ const web = new aws.ec2.Instance(`${pulumi.getStack()}-server`, {
   userData: fs.readFileSync("server-init.sh", "utf8"),
 });
 
-// const responseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(`${pulumi.getStack()}-response-headers`, {
-//   corsConfig: {
-//     accessControlAllowCredentials: false,
-//     accessControlAllowHeaders: {
-//       items: ["*"],
-//     },
-//     accessControlAllowMethods: {
-//       items: ["GET", "POST", "HEAD", "OPTIONS"],
-//     },
-//     accessControlAllowOrigins: {
-//       items: ["*"],
-//     },
-//     originOverride: true
-//   }
-// })
+const responseHeadersPolicy = new aws.cloudfront.ResponseHeadersPolicy(`${pulumi.getStack()}-response-headers`, {
+  corsConfig: {
+    accessControlAllowCredentials: false,
+    accessControlAllowHeaders: {
+      items: ["*"],
+    },
+    accessControlAllowMethods: {
+      items: ["GET", "POST", "HEAD", "OPTIONS"],
+    },
+    accessControlAllowOrigins: {
+      items: ["*"],
+    },
+    originOverride: true
+  }
+})
 
-// const originId = `${process.env.SERVER_DNS}`;
-// const distribution = new aws.cloudfront.Distribution('server-distribution', {
-//   origins: [{
-//     domainName: originId,
-//     originId: originId,
-//     customOriginConfig: {
-//       httpPort: 80,
-//       httpsPort: 443,
-//       originProtocolPolicy: 'http-only',
-//       originSslProtocols: ['TLSv1.2']
-//     }
-//   }],
-//   enabled: true,
-//   isIpv6Enabled: false,
-//   defaultCacheBehavior: {
-//     compress: true,
-//     allowedMethods: [
-//       "DELETE",
-//       "GET",
-//       "HEAD",
-//       "OPTIONS",
-//       "PATCH",
-//       "POST",
-//       "PUT",
-//     ],
-//     cachedMethods: [
-//       "GET",
-//       "HEAD",
-//     ],
-//     targetOriginId: originId,
-//     // responseHeadersPolicyId: responseHeadersPolicy.id,
-//     forwardedValues: {
-//       headers: ["*"],
-//       queryString: true,
-//       cookies: {
-//         forward: "all",
-//       },
-//     },
-//     viewerProtocolPolicy: "redirect-to-https",
-//     minTtl: 0,
-//     defaultTtl: 0,
-//     maxTtl: 0,
-//   },
-//   restrictions: {
-//     geoRestriction: {
-//       restrictionType: "none",
-//     }
-//   },
-//   aliases: [
-//     "duel-server.codeinthedark.interlogica.it"
-//   ],
-//   viewerCertificate: {
-//     // cloudfrontDefaultCertificate: true,
-//     acmCertificateArn: process.env.CERTIFICATE_ARN,
-//     sslSupportMethod: "sni-only",
-//     minimumProtocolVersion: "TLSv1.2_2021",
-//   }
-// });
+const originId = `${process.env.SERVER_DNS}`;
+const distribution = new aws.cloudfront.Distribution('server-distribution', {
+  origins: [{
+    domainName: originId,
+    originId: originId,
+    customOriginConfig: {
+      httpPort: 80,
+      httpsPort: 443,
+      originProtocolPolicy: 'http-only',
+      originSslProtocols: ['TLSv1.2']
+    }
+  }],
+  enabled: true,
+  isIpv6Enabled: false,
+  defaultCacheBehavior: {
+    compress: true,
+    allowedMethods: [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT",
+    ],
+    cachedMethods: [
+      "GET",
+      "HEAD",
+    ],
+    targetOriginId: originId,
+    responseHeadersPolicyId: responseHeadersPolicy.id,
+    forwardedValues: {
+      headers: ["*"],
+      queryString: true,
+      cookies: {
+        forward: "all",
+      },
+    },
+    viewerProtocolPolicy: "redirect-to-https",
+    minTtl: 0,
+    defaultTtl: 0,
+    maxTtl: 0,
+  },
+  restrictions: {
+    geoRestriction: {
+      restrictionType: "none",
+    }
+  },
+  aliases: [
+    // "duel-server.codeinthedark.interlogica.it"
+  ],
+  viewerCertificate: {
+    cloudfrontDefaultCertificate: true,
+    // acmCertificateArn: process.env.CERTIFICATE_ARN,
+    // sslSupportMethod: "sni-only",
+    // minimumProtocolVersion: "TLSv1.2_2021",
+  }
+});
 
 
 // const bucket = new aws.s3.Bucket(`www-frontend-${pulumi.getStack()}`, {
