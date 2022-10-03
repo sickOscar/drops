@@ -124,15 +124,15 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
     <div class={"flex flex-col flex-1"}>
       <div class={"flex"}>
         <div class={"flex-1 flex flex-col items-center text-white"}>
-          <span class={"text-xl text-grey mb-3"}>Colore</span>
+          <span class={"text-xl text-grey mb-1"}>Colore</span>
           <Splash color={playerStats.color}/>
         </div>
         <div class={"flex-1 flex flex-col items-center text-white"}>
-          <span class={"text-xl text-grey mb-3"}>Bombolette</span>
+          <span class={"text-xl text-grey mb-1"}>Bombolette</span>
           <span class={"text-3xl"}>{playerStats.resources}</span>
         </div>
         <div class={"flex-1 flex flex-col items-center text-white"}>
-          <span class={"text-xl text-grey mb-3"}>Mattoni</span>
+          <span class={"text-xl text-grey mb-1"}>Mattoni</span>
           <span class={"text-3xl"}>{playerStats.score}</span>
         </div>
       </div>
@@ -151,7 +151,7 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
 
       <div class={"blue-rounded-container pb-10 mt-auto mx-[-1rem] mb-[-1rem]"}>
 
-        <div class={"flex justify-between items-center px-5 mb-8"}>
+        <div class={"flex justify-between items-center px-5 mb-3"}>
           <span class={"text-white"}>Controlli di gioco</span>
           <InstructionButton/>
         </div>

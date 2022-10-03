@@ -19,7 +19,7 @@ const BattleLayout = () => {
 
   return (
     <>
-      <header class={"flex justify-between items-center h-[2.5em] mb-10"}>
+      <header class={"flex justify-between items-center h-[2.5em] mb-1"}>
         <span class={"text-white text-xl"}>
           {
             isInQueue(gameState) && (<>Prossimi giocatori</>)
