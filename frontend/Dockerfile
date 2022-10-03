@@ -6,6 +6,7 @@ WORKDIR /app
 
 COPY ./ .
 RUN rm .env.local
+RUN echo "VITE_MULTIPLAYER_HOST_GAME=wss://d2bz1cokb81olu.cloudfront.net/server" > .env.production
 
 RUN pnpm i
 RUN npm run build

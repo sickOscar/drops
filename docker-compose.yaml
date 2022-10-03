@@ -46,8 +46,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "7002:7002"
-    environment:
-      - VITE_MULTIPLAYER_HOST_GAME=ws://localhost/server
     networks:
       - drops
 
