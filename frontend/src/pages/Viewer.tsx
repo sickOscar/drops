@@ -341,7 +341,7 @@ const Viewer = () => {
     let botImage;
 
     p.preload = function () {
-      botImage = p.loadImage('/src/assets/drone.png');
+      botImage = p.loadImage('/assets/drone.png');
     }
 
     p.setup = function () {
