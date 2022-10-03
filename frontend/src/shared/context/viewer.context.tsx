@@ -79,6 +79,7 @@ const ViewerProvider = (props: ViewerProviderProps) => {
     console.log("[VIEWER] init context");
 
     setStore("socket", (prev) => {
+      console.log('on connect value', MULTIPLAYER_HOST_VIEWER);
       return io(MULTIPLAYER_HOST_VIEWER, {
         autoConnect: true
       });

@@ -12,52 +12,53 @@ const multiplayerServerPort = Number(process.env.port) || 7000;
 const viewerServerPort = Number(process.env.port) || 7001;
 
 
-
 async function startGameServer() {
 
-    const gameServer = new Server({
-        // server: createServer(app),
-        transport: new WebSocketTransport({})
-    });
+  const gameServer = new Server({
+    // server: createServer(app),
+    transport: new WebSocketTransport({})
+  });
 
-    gameServer.define('battle', BattleRoom);
-    gameServer.define('relay', DropRelayRoom);
+  gameServer.define('battle', BattleRoom);
+  gameServer.define('relay', DropRelayRoom);
 
-    const relay = await matchMaker.createRoom('relay', {});
-    const battle = await matchMaker.createRoom("battle", { /* options */ });
+  const relay = await matchMaker.createRoom('relay', {});
+  const battle = await matchMaker.createRoom("battle", { /* options */});
 
-    enhanced_logging(relay, battle);
+  enhanced_logging(relay, battle);
 
-    return gameServer.listen(multiplayerServerPort)
+  return gameServer.listen(multiplayerServerPort)
 }
 
 async function startViewerServer() {
-    const app = express();
-    app.use(express.json());
-    const server = http.createServer(app);
-    const io = new SocketIoServer(server, {
-        path: process.env.NODE_ENV === 'production' ? "/viewersocket/socket.io" : "",
-        cors: {
-            origin: "*",
-            methods: ["GET", "POST"]
-        }
-    });
+  const app = express();
+  app.use(express.json());
+  const server = http.createServer(app);
+  const socketPath = process.env.NODE_ENV === 'production' ? "/viewersocket/socket.io" : ""
+  console.log(`socketPath`, socketPath)
+  const io = new SocketIoServer(server, {
+    path: socketPath,
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
 
-    io.on('connection', socket => {
-        console.log('viewer connected');
-        Globals.viewerSocket = socket;
-    })
+  io.on('connection', socket => {
+    console.log('viewer connected');
+    Globals.viewerSocket = socket;
+  })
 
-    return server.listen(viewerServerPort);
+  return server.listen(viewerServerPort);
 }
 
 startViewerServer()
-    .then(() => {
-        console.log(`Viewer on ws://localhost:${viewerServerPort}`);
-    })
+  .then(() => {
+    console.log(`Viewer on ws://localhost:${viewerServerPort}`);
+  })
 
 startGameServer()
-    .then(() => {
-        console.log(`Server started on port ${multiplayerServerPort}`);
-    })
+  .then(() => {
+    console.log(`Server started on port ${multiplayerServerPort}`);
+  })
 
