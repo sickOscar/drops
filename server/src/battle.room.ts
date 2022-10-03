@@ -110,6 +110,8 @@ export class BattleRoom extends Room<GameState> {
 
       const player = this.state.players.get(client.sessionId);
 
+      console.log(`player`, player)
+      
       coreSendingSocket.then(socket => {
         const toSend = `|${player.id}|(${message})`;
         console.log(`toSend`, toSend)
