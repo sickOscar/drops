@@ -13,6 +13,7 @@ RUN npm run build
 
 COPY serve.json /app/dist/serve.json
 COPY src/assets/logo_square.png /app/dist/assets/logo_square.png
+COPY src/assets/drone.png /app/dist/assets/drone.png
 
 WORKDIR /app/dist
 
