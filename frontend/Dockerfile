@@ -5,6 +5,7 @@ RUN npm i -g pnpm
 WORKDIR /app
 
 COPY ./ .
+RUN rm .env.local
 
 RUN pnpm i
 RUN npm run build
