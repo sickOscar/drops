@@ -7,18 +7,21 @@ import {enhanced_logging} from "./src/logging";
 import express from "express";
 import {Server as SocketIoServer} from "socket.io"
 import {Globals} from "./src/global";
+import cors from "cors";
 
 const multiplayerServerPort = Number(process.env.port) || 7000;
 const viewerServerPort = Number(process.env.port) || 7001;
 
-
+const app = express();
+app.use(express.json());
+app.use(cors())
 
 async function startGameServer() {
 
     const gameServer = new Server({
         // server: createServer(app),
         transport: new WebSocketTransport({
-          server: http.createServer(),
+          server: http.createServer(app),
         })
     });
 
@@ -34,8 +37,7 @@ async function startGameServer() {
 }
 
 async function startViewerServer() {
-    const app = express();
-    app.use(express.json());
+
     const server = http.createServer(app);
     const io = new SocketIoServer(server, {
         path: process.env.NODE_ENV === 'production' ? "/viewersocket/socket.io" : "",
