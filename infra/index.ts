@@ -163,7 +163,7 @@ const distribution = new aws.cloudfront.Distribution('server-distribution', {
       "HEAD",
     ],
     targetOriginId: originId,
-    responseHeadersPolicyId: responseHeadersPolicy.id,
+    // responseHeadersPolicyId: responseHeadersPolicy.id,
     forwardedValues: {
       headers: ["*"],
       queryString: true,
@@ -233,12 +233,24 @@ new aws.s3.BucketPolicy(`${pulumi.getStack()}-bucket-policy`, {
   },
 })
 
+// const originId = `${process.env.SERVER_DNS}`;
 const s3OriginId = "duel.codeinthedark.interlogica.it";
 const frontendDistribution = new aws.cloudfront.Distribution('frontend-distribution', {
-  origins: [{
-    domainName: bucket.bucketRegionalDomainName,
-    originId: s3OriginId,
-  }],
+  origins: [
+    {
+      domainName: bucket.bucketRegionalDomainName,
+      originId: s3OriginId,
+    },
+    {
+      domainName: originId,
+      originId: originId,
+      customOriginConfig: {
+        httpPort: 80,
+        httpsPort: 443,
+        originProtocolPolicy: 'http-only',
+        originSslProtocols: ['TLSv1.2']
+      }
+    }],
   enabled: true,
   isIpv6Enabled: false,
   priceClass: "PriceClass_100",
@@ -251,6 +263,38 @@ const frontendDistribution = new aws.cloudfront.Distribution('frontend-distribut
       responsePagePath: "/index.html",
     }
   ],
+  // orderedCacheBehaviors:  [
+  //   {
+  //     pathPattern: "/api/*",
+  //     compress: false,
+  //     allowedMethods: [
+  //       "DELETE",
+  //       "GET",
+  //       "HEAD",
+  //       "OPTIONS",
+  //       "PATCH",
+  //       "POST",
+  //       "PUT",
+  //       ],
+  //     cachedMethods: [
+  //       "GET",
+  //       "HEAD",
+  //       "OPTIONS"
+  //       ],
+  //     targetOriginId: originId,
+  //     // responseHeadersPolicyId: responseHeadersPolicy.id,
+  //     forwardedValues: {
+  //       queryString: true,
+  //       cookies: {
+  //         forward: "all",
+  //       }
+  //     },
+  //     viewerProtocolPolicy: "redirect-to-https",
+  //     minTtl: 0,
+  //     defaultTtl: 0,
+  //     maxTtl: 0
+  //   }
+  // ],
   defaultCacheBehavior: {
     compress: true,
     viewerProtocolPolicy: "redirect-to-https",
@@ -285,13 +329,13 @@ const frontendDistribution = new aws.cloudfront.Distribution('frontend-distribut
     }
   },
   aliases: [
-    "duel.codeinthedark.interlogica.it"
+    // "duel.codeinthedark.interlogica.it"
   ],
   viewerCertificate: {
-    // cloudfrontDefaultCertificate: true,
-    acmCertificateArn: process.env.CERTIFICATE_ARN,
-    sslSupportMethod: "sni-only",
-    minimumProtocolVersion: "TLSv1.2_2021"
+    cloudfrontDefaultCertificate: true,
+    // acmCertificateArn: process.env.CERTIFICATE_ARN,
+    // sslSupportMethod: "sni-only",
+    // minimumProtocolVersion: "TLSv1.2_2021"
   }
 });
 

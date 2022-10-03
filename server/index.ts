@@ -17,7 +17,9 @@ async function startGameServer() {
 
     const gameServer = new Server({
         // server: createServer(app),
-        transport: new WebSocketTransport({})
+        transport: new WebSocketTransport({
+          server: http.createServer(),
+        })
     });
 
     gameServer.define('battle', BattleRoom);
