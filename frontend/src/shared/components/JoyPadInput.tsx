@@ -21,8 +21,13 @@ const JoyPadInput = (props: JoyPadInputProps) => {
 
   const lockIcon = () => props.isDisabled ? <LockClosed/> : <LockOpen/>;
 
-  const handleInputChange = (e: any) => {
+  const handleInput = (e: any) => {
     props.onInput(parseInt(e.target.value, 10), props.type);
+  }
+
+  const handleInputChange = (e: any) => {
+    e.preventDefault();
+    props.onChange();
   }
 
   createEffect(() => {
@@ -42,16 +47,17 @@ const JoyPadInput = (props: JoyPadInputProps) => {
       <label class="text-grey break-words" for={props.type}>{props.label}</label>
       <div class={"joyPadInput__range-container flex flex-col border-1 rounded-[45px] bg-semitransparent-grey mx-auto w-[5.5rem] h-[35vh] p-4 mt-3 relative justify-between items-center main-shadow"}>
         <span class={`text-white z-30`} innerHTML={props.labelFormula(props.value)}></span>
-        <input onInput={handleInputChange}
-           onChange={props.onChange}
+        <input
+           onInput={handleInput}
+           onChange={handleInputChange}
            type="range"
            min={0}
            max={100}
            id={props.type}
-           value={props.value}
+           value={props.value.toString()}
            step={1}
            disabled={props.isDisabled}
-           class={"my-auto"}
+           class={`my-auto ${props.isDisabled ? 'locked' : null}`}
            style={backgroundInputStyle()}
         />
         <button class={"h-[50px] w-[50px] flex items-center justify-center mb-[-0.5em]"} onClick={(e: any) => props.onLock(props.type)}>

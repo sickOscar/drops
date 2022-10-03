@@ -74,13 +74,24 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
     const maxTotal = 100;
     const blocked = 0;
 
-    setJoyPadStore(type.toLowerCase() as SLIDER_TYPE, {value});
+    setJoyPadStore(type.toLowerCase() as SLIDER_TYPE, (oldValue) => {
+      let updateValue = value;
+      const difference = value - oldValue.value;
+      const MAX_STEP_DIFF = 7;
+
+      // Doesn't allow big input range step difference from prev and next value!
+      if (Math.abs(difference) > MAX_STEP_DIFF) {
+        updateValue = difference > 0 ? oldValue.value + MAX_STEP_DIFF : oldValue.value - MAX_STEP_DIFF;
+      }
+
+      return { value: Math.round(updateValue) };
+    });
 
     if (sum > maxTotal || sum < maxTotal) {
       for (let sliderType in SLIDER_TYPE) {
         if (type !== sliderType && !joyPadStore[sliderType.toLowerCase() as SLIDER_TYPE].disabled) {
           setJoyPadStore(sliderType.toLowerCase() as SLIDER_TYPE,(oldValue) => {
-            return { value: valueBetweenMinAndMax(oldValue.value - ((sum - maxTotal) / (2 - blocked)), MIN, MAX) };
+            return { value: Math.round(valueBetweenMinAndMax(oldValue.value - ((sum - maxTotal) / (2 - blocked)), MIN, MAX)) };
           });
         }
       }
@@ -185,10 +196,6 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
             onLock={triggerLock}
             labelFormula={(value) => (`${((value / 100) * DEVELOPMENT_AT_END_ROUND).toFixed(1)}<br>/turn`)}
           />
-
-
-
-
         </div>
       </div>
 
