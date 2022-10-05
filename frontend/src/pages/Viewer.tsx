@@ -428,8 +428,34 @@ const Viewer = () => {
 
   return (
     <>
-      {viewerState && viewerState?.timeToStart > 0 &&
 
+      {gameIsOver() && (
+        <div class="container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div class="bg-purple-800 text-white text-center bg-opacity-70	p-5  text-xl ">
+            <h1 class="text-3xl">
+              Il miglior teppista è stato <br/>
+              <span class="text-7xl">{
+                viewerState && viewerState.playersMap && Object.values(viewerState.playersMap)
+                  .sort((a, b) => b.res - a.res)[0].name
+              }</span>
+            </h1>
+            {/*<h2>Hall of fame</h2>*/}
+            {/*<div class="flex flex-col">*/}
+            {/*  {*/}
+            {/*    viewerState?.hallOfFame?.map((player, i) => (*/}
+            {/*      <div class="w-[500px] flex flex-row justify-between">*/}
+            {/*        <span class="text-2xl">{i + 1}.</span>*/}
+            {/*        <span class="text-2xl">{player.name}</span>*/}
+            {/*        <span class="text-2xl">{player.score}</span>*/}
+            {/*      </div>*/}
+            {/*    ))*/}
+            {/*  }*/}
+            {/*</div>*/}
+          </div>
+        </div>
+      )}
+
+      {viewerState && viewerState?.timeToStart > 0 &&
         <div class="container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <div class="bg-purple-800 text-white text-center bg-opacity-70	p-5  text-xl ">
             <h1 class="">
@@ -447,10 +473,6 @@ const Viewer = () => {
                 <span>secondi</span>
               </div>
             </div>
-
-
-
-
           </div>
         </div>
       }
@@ -458,7 +480,7 @@ const Viewer = () => {
         <div id={"field"} ref={canvas}></div>
         <div class={"pl-4 text-white w-96 overflow-auto h-screen"}>
 
-          {viewerState?.gameState === ViewerStates.RUNNING && <div class="ranking">
+          {gameIsRunning() && <div class="ranking">
 
             <h3 class="mt-8 text-xl">
               Tempo rimasto <br />
@@ -489,7 +511,7 @@ const Viewer = () => {
           </div>
           }
 
-          {viewerState?.gameState !== ViewerStates.RUNNING &&
+          {!gameIsRunning() &&
           <div class="mt-8 text-3xl">
             <h2>Join the game!</h2>
             <p>Scannerizza i QR code</p>

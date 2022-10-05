@@ -26,6 +26,7 @@ export class GameState extends Schema {
     @type(Field) field: Field = new Field();
     @type({map: Player}) players = new MapSchema<Player>();
     @type("boolean") gameRunning: boolean = false;
+    @type("boolean") gameOver: boolean = false;
     @type("string") time: string;
 }
 

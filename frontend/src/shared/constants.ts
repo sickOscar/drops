@@ -20,7 +20,8 @@ const BATTLE_ROOM = {
   BATTLE_START: "battle_start",
   IDENTITY: "identity",
   ACTION: "action",
-  END_GAME: "endgame"
+  END_GAME: "endgame",
+  BATTLE_END: "battle_end"
 };
 
 const VIEWER_SOCKETS = {
@@ -29,6 +30,7 @@ const VIEWER_SOCKETS = {
   PLAYERS: "players",
   TIME_TO_START: "timer",
   ENDGAME: "endgame",
+  BATTLE_END: "battle_end",
   PLAYING_PLAYERS: "playingPlayers"
 }
 

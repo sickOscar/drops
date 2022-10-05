@@ -32,6 +32,8 @@ export class BattleRoom extends Room<GameState> {
         .filter(message => message.length > 0)
         .forEach(message => {
 
+          const viewerSocket = Globals.viewerSocket;
+
           // remove trailing |
           message = message.slice(0, -1);
 
@@ -68,7 +70,6 @@ export class BattleRoom extends Room<GameState> {
               return;
             }
 
-
             const playersList = Object.values(this.state.players.toJSON());
             viewerSocket.emit('players', playersList);
             viewerSocket.emit('time', this.state.time);
@@ -78,25 +79,32 @@ export class BattleRoom extends Room<GameState> {
           }
 
           if (message.startsWith("*field:")) {
-
-            const viewerSocket = Globals.viewerSocket;
-
             if (!viewerSocket) {
               return;
             }
-
             viewerSocket.emit('field', message.substring("*field:".length));
             return null;
           }
 
           if (message.startsWith("*endgame")) {
-            console.log('ENDGAME')
-            this.state.gameRunning = false;
-            this.broadcast('endgame');
 
-            this.state.players.clear();
+            this.state.gameOver = true;
+            console.log('BATTLE_END')
+            viewerSocket.emit('battle_end');
+            this.broadcast('battle_end');
 
-            this.presence.publish('battle_state', 'endgame');
+            setTimeout(() => {
+              console.log('ENDGAME')
+              this.state.gameRunning = false;
+              this.broadcast('endgame');
+
+              this.state.players.clear();
+
+              // tell relay that the game is over
+              this.presence.publish('battle_state', 'endgame');
+            }, Globals.GAME_EXIT_TIME)
+
+
 
           }
 
@@ -110,13 +118,10 @@ export class BattleRoom extends Room<GameState> {
 
       const player = this.state.players.get(client.sessionId);
 
-      console.log(`player`, player)
-      
       coreSendingSocket.then(socket => {
         const toSend = `|${player.id}|(${message})`;
         console.log(`toSend`, toSend)
         socket.write(`${toSend}\n`);
-
       })
 
     })
@@ -137,13 +142,15 @@ export class BattleRoom extends Room<GameState> {
       if (existingPlayer) {
 
         existingPlayer.connected = true;
-        console.log(`existingPlayer`, existingPlayer)
+        // console.log(`existingPlayer`, existingPlayer)
         this.state.players.set(client.sessionId, existingPlayer.clone());
         if (client.sessionId !== existingPlayer.sessionId) {
           this.state.players.delete(existingPlayer.sessionId);
         }
 
-        client.send('battle_start');
+        // if (!this.state.gameOver) {
+          client.send('battle_start');
+        // }
 
       } else {
 
@@ -168,7 +175,7 @@ export class BattleRoom extends Room<GameState> {
     })
 
     this.presence.subscribe('battle_start', (players:Set<Player>) => {
-      
+
       players.forEach(p => {
         const player = new Player();
         player.id = BattleRoom.playerIndex++;
@@ -183,7 +190,6 @@ export class BattleRoom extends Room<GameState> {
         this.state.players.set(p.sessionId, player);
       })
 
-      console.log(`battle players`, Array.from(players)[0])
       this.startGame();
     })
 
@@ -196,6 +202,7 @@ export class BattleRoom extends Room<GameState> {
 
     if (!this.state.gameRunning) {
 
+      this.state.gameOver = true;
       this.state.gameRunning = true;
       this.state.time = "600"
 

@@ -4,18 +4,25 @@ import {io, Socket} from "socket.io-client";
 import {MULTIPLAYER_HOST_VIEWER, VIEWER_SOCKETS} from "../constants";
 import {BattleInfoCurrentPlayer} from "../../models/user";
 
-interface ViewerDispatchContext {}
+interface ViewerDispatchContext {
+}
 
-interface ViewerStateContext  {
+interface HallOfFameEntry {
+  name: string;
+  score: number;
+}
+
+interface ViewerStateContext {
   socket: Socket | null,
   bootstrapped: boolean,
   field: number[][],
-  playersMap: {[key: string | number]: BattleInfoCurrentPlayer} | undefined,
+  playersMap: { [key: string | number]: BattleInfoCurrentPlayer } | undefined,
   round: number,
   remainingTime: number,
   playersInQueue: any[],
   timeToStart: number,
   gameState: ViewerStates
+  hallOfFame: HallOfFameEntry[]
 }
 
 export enum ViewerStates {
@@ -41,7 +48,8 @@ const initialState: ViewerStateContext = {
   remainingTime: 0,
   playersInQueue: [],
   timeToStart: 0,
-  gameState: ViewerStates.DEMO
+  gameState: ViewerStates.DEMO,
+  hallOfFame: []
 }
 
 const ViewerLoader = () => {
@@ -105,7 +113,7 @@ const ViewerProvider = (props: ViewerProviderProps) => {
     store.socket?.on(VIEWER_SOCKETS.PLAYERS, (players) => {
       setStore("playersMap", undefined);
 
-      let map: {[key: string]: BattleInfoCurrentPlayer} = {};
+      let map: { [key: string]: BattleInfoCurrentPlayer } = {};
 
       players.forEach((player: BattleInfoCurrentPlayer) => {
         // @ts-ignore
@@ -118,7 +126,7 @@ const ViewerProvider = (props: ViewerProviderProps) => {
     store.socket?.on(VIEWER_SOCKETS.TIME, (time) => {
       setStore("remainingTime", Number(time));
     });
-    
+
     store.socket?.on(VIEWER_SOCKETS.PLAYING_PLAYERS, (players) => {
       setStore("playersInQueue", JSON.parse(players));
     })
@@ -129,9 +137,16 @@ const ViewerProvider = (props: ViewerProviderProps) => {
       setStore("gameState", ViewerStates.COUNTDOWN);
     });
 
-    store.socket?.on(VIEWER_SOCKETS.ENDGAME, () => {
+    store.socket?.on(VIEWER_SOCKETS.BATTLE_END, () => {
+      console.log('BATTLE END');
       setStore("gameState", ViewerStates.OVER);
     })
+
+    store.socket?.on(VIEWER_SOCKETS.ENDGAME, () => {
+      console.log('ENDGAME');
+      setStore("gameState", ViewerStates.DEMO);
+    })
+
   }
 
   return (
