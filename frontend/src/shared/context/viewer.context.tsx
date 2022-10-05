@@ -13,7 +13,7 @@ interface ViewerStateContext  {
   playersMap: {[key: string | number]: BattleInfoCurrentPlayer} | undefined,
   round: number,
   remainingTime: number,
-  playersInQueue: string[],
+  playersInQueue: any[],
   timeToStart: number,
   gameState: ViewerStates
 }
@@ -118,6 +118,10 @@ const ViewerProvider = (props: ViewerProviderProps) => {
     store.socket?.on(VIEWER_SOCKETS.TIME, (time) => {
       setStore("remainingTime", Number(time));
     });
+    
+    store.socket?.on(VIEWER_SOCKETS.PLAYING_PLAYERS, (players) => {
+      setStore("playersInQueue", JSON.parse(players));
+    })
 
     store.socket?.on(VIEWER_SOCKETS.TIME_TO_START, (time) => {
       setStore("timeToStart", Number(time));

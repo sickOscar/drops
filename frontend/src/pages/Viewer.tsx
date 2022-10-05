@@ -238,8 +238,10 @@ const Viewer = () => {
 
         const n = p.noise(p.frameCount / 50);
 
-        for (let i = 0; i < BOARD_SIZE; i++) {
-          cleanedField[i][currentBotYIndex] = 1;
+        if (cleanedField) {
+          for (let i = 0; i < BOARD_SIZE; i++) {
+            cleanedField[i][currentBotYIndex] = 1;
+          }
         }
 
 
@@ -425,11 +427,26 @@ const Viewer = () => {
       {viewerState && viewerState?.timeToStart > 0 &&
 
         <div class="container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div class="bg-purple-400 bg-opacity-70	p-5">
-            <h1 class="text-white text-center text-l">
-              La prossima vandalizzazione partirà tra <span
-              class="text-xl">{viewerState?.timeToStart / 1000}</span> secondi
+          <div class="bg-purple-700 text-white text-center bg-opacity-70	p-5  text-xl ">
+            <h1 class="">
+              La prossima vandalizzazione sta per cominciare!<br/>
+              {viewerState.playersInQueue.length < 8 && <span>In attesa di altri giocatori...</span>}
             </h1>
+            <div class="mt-8 flex justify-around">
+              <div>
+                <ul>
+                  {Object.values(viewerState.playersInQueue).map(p => <li>{p.name}</li>)}
+                </ul>
+              </div>
+              <div class="w-80">
+                <span class="text-8xl">{viewerState?.timeToStart / 1000}</span><br/>
+                <span>secondi</span>
+              </div>
+            </div>
+
+
+
+
           </div>
         </div>
       }

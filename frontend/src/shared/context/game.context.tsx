@@ -259,7 +259,7 @@ const GameProvider = (props: GameProviderProps) => {
   }
 
   const buildIdentityString = (user: User) => {
-    return `${user.sub}#${user.name}#${user.picture}`;
+    return `${user.sub}#${user.nickname}#${user.picture}`;
   }
 
   const sendSliderValues = ({military, production, research}: SliderValuesPayload) => {

@@ -116,11 +116,13 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
       console.log('Broadcasting waiting list timer', this.waitingListMissingTime);
       this.broadcast('timer', this.waitingListMissingTime);
 
+
       const viewerSocket = Globals.viewerSocket;
       if (!viewerSocket) {
         return;
       }
 
+      viewerSocket.emit('playingPlayers', JSON.stringify(this.getPlayersThatShouldStartPlaying()));
       viewerSocket.emit('timer', this.waitingListMissingTime);
 
     }, 1000);
@@ -217,16 +219,9 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
           involvedClient.send("battle_ready");
         }
 
-
-        // addedPlayers++;
-        // if (addedPlayers === Globals.MAX_PLAYERS_NUMBER) {
-        //   break;
-        // }
       } else {
         newWaitingPlayersQueue.enqueue(player);
       }
-
-
 
     }
 
@@ -234,6 +229,13 @@ export class DropRelayRoom extends Room<RelayState> { // tslint:disable-line
 
     this.waitingPlayers = newWaitingPlayersQueue;
 
+  }
+
+  private getPlayersThatShouldStartPlaying() {
+    const waiting = this.waitingPlayers.toArray();
+    const numberOfPlayers = Math.min(Globals.MAX_PLAYERS_NUMBER, waiting.length);
+    // kind of deep copy ??
+    return waiting.slice(0, numberOfPlayers).map(p => ({...p}));
   }
 
   private putPlayerInWaitingList(player: Player) {

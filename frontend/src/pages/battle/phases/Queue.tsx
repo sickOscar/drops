@@ -21,9 +21,11 @@ const PlayerRow = (props: { player: PlayerDetail, highlight: boolean }) => {
   const commonClasses = "w-[50px] h-[50px] mr-5 rounded-full border-2 border-black";
 
   const letters = () => {
-    const [firstName, lastName] = props.player.name.split(" ");
+    // const [firstName, lastName] = props.player.name.split(" ");
+    //
+    // return (<>{firstName[0] || ""}&nbsp;{lastName[0] || ""}</>);
 
-    return (<>{firstName[0] || ""}&nbsp;{lastName[0] || ""}</>);
+    return (<>{props.player.name[0] || ""}</>);
   }
 
   return (

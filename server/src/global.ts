@@ -8,7 +8,7 @@ interface GlobalsContainer {
 
 
 export const Globals: GlobalsContainer = {
-  GAME_WAITING_TIME: 10000,
+  GAME_WAITING_TIME: 60000,
   // The number of players in the game
   MIN_PLAYERS_NUMBER: 1,
   MAX_PLAYERS_NUMBER: 2,
