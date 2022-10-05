@@ -479,7 +479,7 @@ const Viewer = () => {
                       <span class="mr-4">{i + 1}</span>
                       <span class={"w-[20px] h-[20px] mr-4"}
                           style={{"background-color": player.color}}></span>
-                      <span class={`w-[200px]`}>{player.name.substring(0, 20)}</span>
+                      <span class={`w-[250px]`}>{player.name.substring(0, 20)}</span>
                       <span class={"w-[100px]"}>{player.score}</span>
                     </li>
                   ))

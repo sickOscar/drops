@@ -5,7 +5,9 @@ const InstructionButton = () => {
   const uiDispatch = useUiDispatch();
 
   return (
-    <button onClick={uiDispatch?.toggleInstruction} class={"acquamarine-button"}><Info/>&nbsp;Istruzioni</button>
+    <button onClick={uiDispatch?.toggleInstruction} class={"acquamarine-button"}>
+      <Info/>
+    </button>
   )
 }
 

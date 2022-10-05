@@ -136,17 +136,31 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
           <span class={"text-3xl"}>{playerStats.score}</span>
         </div>
       </div>
-      <p class={"mt-3 mb-2 text-white text-xl"}>
-        Livello {playerStats.milestones_reached + 1}: {LEVELS[playerStats.milestones_reached + 1]}
-      </p>
+      <div class={"flex justify-between"}>
+        <p class={"mt-3 mb-2 text-white text-xl "}>
+          Livello {playerStats.milestones_reached + 1}: {LEVELS[playerStats.milestones_reached + 1]}
+        </p>
+        <p>
+          <InstructionButton/>
+        </p>
+      </div>
+
       <div class={"flex gap-1"}>
-        <For each={[...Array(10).keys()]}>
-          {(item, index) =>
-            <div class={"flex-1"}>
-              <Splash color={index() < playerStats.milestones_reached + 1 ? "#F2C94C" : "#FFFFFF"}/>
-            </div>
-          }
-        </For>
+        <div class={"flex-1"}>
+          <div class={"h-2 bg-grey rounded-full"}>
+            {playerStats.milestones_reached + 1 < 10 && <div class={"h-2 bg-white rounded-full transition-all ease-linear duration-500"} style={`width: ${playerStats.development}%`}/>}
+          </div>
+
+        </div>
+
+
+        {/*<For each={[...Array(10).keys()]}>*/}
+        {/*  {(item, index) =>*/}
+        {/*    <div class={"flex-1"}>*/}
+        {/*      <Splash color={index() < playerStats.milestones_reached + 1 ? "#F2C94C" : "#FFFFFF"}/>*/}
+        {/*    </div>*/}
+        {/*  }*/}
+        {/*</For>*/}
       </div>
 
       <div class={"blue-rounded-container mt-2 pb-5 mb-[-1rem]"}>
