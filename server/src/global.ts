@@ -12,7 +12,7 @@ interface GlobalsContainer {
 export const Globals: GlobalsContainer = {
   GAME_WAITING_TIME: 15000,
   GAME_EXIT_TIME: 15000,
-  GAME_MAX_ROUNDS: 300,
+  GAME_MAX_ROUNDS: 600,
   // The number of players in the game
   MIN_PLAYERS_NUMBER: 2,
   MAX_PLAYERS_NUMBER: 8,
