@@ -45,9 +45,10 @@ const JoyPadInput = (props: JoyPadInputProps) => {
   return (
     <div class={"joyPadInput flex flex-col flex-1 items-center text-center relative"}>
       <label class="text-grey break-words" for={props.type}>{props.label}</label>
-      <div class={"joyPadInput__range-container flex flex-col border-1 rounded-[45px] bg-semitransparent-grey mx-auto w-[5.5rem] h-[35vh] p-4 mt-3 relative justify-between items-center main-shadow"}>
+      <div class={"joyPadInput__range-container flex flex-col border-1 rounded-[45px] bg-semitransparent-grey mx-auto w-[5.5rem] h-[50vh] p-4 mt-3 relative justify-between items-center main-shadow"}>
         <span class={`text-white z-30`} innerHTML={props.labelFormula(props.value)}></span>
         <input
+          class={"w-[30vh]"}
            onInput={handleInput}
            onChange={handleInputChange}
            type="range"

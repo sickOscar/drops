@@ -4,6 +4,10 @@ import {BOARD_SIZE, CELL_SIZE, HOSTNAME} from "../shared/constants";
 import {useViewerState, ViewerStates} from "../shared/context/viewer.context";
 import p5 from "p5";
 
+const leftPad = (num:number) => {
+  return num < 10 ? `0${num}` : num;
+}
+
 const Viewer = () => {
   const viewerState = useViewerState();
   const [p5Instance, setP5Instance] = createSignal<p5 | null>(null);
@@ -427,7 +431,7 @@ const Viewer = () => {
       {viewerState && viewerState?.timeToStart > 0 &&
 
         <div class="container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div class="bg-purple-700 text-white text-center bg-opacity-70	p-5  text-xl ">
+          <div class="bg-purple-800 text-white text-center bg-opacity-70	p-5  text-xl ">
             <h1 class="">
               La prossima vandalizzazione sta per cominciare!<br/>
               {viewerState.playersInQueue.length < 8 && <span>In attesa di altri giocatori...</span>}
@@ -452,30 +456,45 @@ const Viewer = () => {
       }
       <div class={"flex flex-row justify-center"}>
         <div id={"field"} ref={canvas}></div>
-        <div class={"text-white w-96 overflow-auto h-screen"}>
+        <div class={"pl-4 text-white w-96 overflow-auto h-screen"}>
 
           {viewerState?.gameState === ViewerStates.RUNNING && <div class="ranking">
-            <h2>Ranking</h2>
+
+            <h3 class="mt-8 text-xl">
+              Tempo rimasto <br />
+              <span class="text-7xl">{
+                leftPad(Math.floor(Math.round(useViewerState()?.remainingTime / 2) / 60))
+              }:{
+                leftPad(Math.round(useViewerState()?.remainingTime / 2) % 60)
+              }</span>
+            </h3>
+
+            <h1 class="text-xl mt-8">Classifica</h1>
             <ol>
               {
                 Object.values(useViewerState()?.playersMap || [])
                   .sort((a, b) => b.score - a.score)
-                  .map(player => (
-                    <li class={"flex"}>
-                    <span class={"w-[20px] h-[20px]"}
-                          style={{"background-color": player.color}}></span>{player.score} {player.name}
+                  .map((player, i) => (
+                    <li class={`flex text-2xl mb-3`}>
+                      <span class="mr-4">{i + 1}</span>
+                      <span class={"w-[20px] h-[20px] mr-4"}
+                          style={{"background-color": player.color}}></span>
+                      <span class={`w-[200px]`}>{player.name.substring(0, 20)}</span>
+                      <span class={"w-[100px]"}>{player.score}</span>
                     </li>
                   ))
               }
             </ol>
-            <h3>Time left {useViewerState()?.remainingTime}/600</h3>
+
           </div>
           }
 
-          <div>
+          {viewerState?.gameState !== ViewerStates.RUNNING &&
+          <div class="mt-8 text-3xl">
             <h2>Join the game!</h2>
             <p>Scannerizza i QR code</p>
           </div>
+          }
 
 
         </div>

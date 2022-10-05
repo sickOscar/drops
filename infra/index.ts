@@ -182,13 +182,13 @@ const distribution = new aws.cloudfront.Distribution('server-distribution', {
     }
   },
   aliases: [
-    // "duel-server.codeinthedark.interlogica.it"
+    "duel.codeinthedark.interlogica.it"
   ],
   viewerCertificate: {
-    cloudfrontDefaultCertificate: true,
-    // acmCertificateArn: process.env.CERTIFICATE_ARN,
-    // sslSupportMethod: "sni-only",
-    // minimumProtocolVersion: "TLSv1.2_2021",
+    // cloudfrontDefaultCertificate: true,
+    acmCertificateArn: process.env.CERTIFICATE_ARN,
+    sslSupportMethod: "sni-only",
+    minimumProtocolVersion: "TLSv1.2_2021",
   }
 });
 

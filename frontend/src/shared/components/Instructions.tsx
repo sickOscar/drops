@@ -21,6 +21,8 @@ const Instructions = () => {
       <div class={"overflow-y-auto"}>
         <p>Regola i controlli di gioco per conquistare più mattoni possibili e battere gli avversari!</p>
 
+        <p>Ad ogni turno, la tua macchia di inchiostro proverà ad espandersi e potrai controllarne la crescita con i controlli di gioco.</p>
+
         <p class={"text-grey mt-5"}>Potenza spruzzo:</p>
         <p>Aumenta la potenza del tuo spruzzo per coprire il colore degli altri giocatori! Ma attenzione: spruzzare ti costerà bombolette! E' sufficiente una bomboletta per coprire uno spazio vuoto, ma te ne serviranno 10 per coprire un altro colore. Inoltre, potrai coprire il colore del tuo avversario solo se la tua potenza di spruzzo sarà superiore alla sua.</p>
 
