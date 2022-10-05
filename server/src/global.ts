@@ -9,11 +9,11 @@ interface GlobalsContainer {
 
 
 export const Globals: GlobalsContainer = {
-  GAME_WAITING_TIME: 3000,
-  GAME_EXIT_TIME: 10000,
+  GAME_WAITING_TIME: 15000,
+  GAME_EXIT_TIME: 15000,
   // The number of players in the game
-  MIN_PLAYERS_NUMBER: 1,
-  MAX_PLAYERS_NUMBER: 2,
+  MIN_PLAYERS_NUMBER: 2,
+  MAX_PLAYERS_NUMBER: 8,
   // socket.io sending seockt for field
   viewerSocket: undefined,
   playersForThisGame: 0
