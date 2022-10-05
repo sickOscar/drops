@@ -204,7 +204,7 @@ export class BattleRoom extends Room<GameState> {
 
       this.state.gameOver = true;
       this.state.gameRunning = true;
-      this.state.time = "600"
+      this.state.time = `${Globals.GAME_MAX_ROUNDS}`;
 
       const colors = [
         '#4EC3CB',
