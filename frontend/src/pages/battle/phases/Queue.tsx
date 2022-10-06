@@ -16,7 +16,7 @@ const PlayerRow = (props: { player: PlayerDetail, highlight: boolean }) => {
 
   return (
     <li
-      class={`${!player.connected ? "disconnected" : undefined} flex my-5 items-center ${highlight ? "bg-semitransparent-acquamarine" : "bg-semitransparent-grey"} rounded-[45px] p-1`}>
+      class={`${!player.connected ? "disconnected" : undefined} animate__animated animate__fadeInDown flex my-5 items-center ${highlight ? "bg-semitransparent-acquamarine" : "bg-semitransparent-grey"} rounded-[45px] p-1`}>
       <PlayerImageRounded player={player}/>
       <span class={"text-white"}>{player.name}</span>
     </li>
@@ -64,7 +64,7 @@ const Queue = (props: QueueProps) => {
               return (
                 <ul>
                   {
-                    lobby.map(player => <PlayerRow player={player} highlight={player.name === auth?.user?.name} />)
+                    lobby.map(player => <PlayerRow player={player} highlight={player.name === auth?.user?.nickname}/>)
                   }
                 </ul>
               )
@@ -74,7 +74,7 @@ const Queue = (props: QueueProps) => {
               <ul>
                 <p class={"text-white text-xl"}>Giocatori in coda, match #{index + 1}</p>
                 {
-                  lobby.map(player => <PlayerRow player={player} highlight={player.name === auth?.user?.name} />)
+                  lobby.map(player => <PlayerRow player={player} highlight={player.name === auth?.user?.nickname}/>)
                 }
               </ul>
             )

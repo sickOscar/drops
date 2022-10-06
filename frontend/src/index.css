@@ -25,6 +25,10 @@
   }
 }
 
+:root {
+  --animate-duration: 500ms;
+}
+
 body {
   margin: 0;
   font-family: 'Special Elite', cursive;

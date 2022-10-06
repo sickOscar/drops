@@ -137,8 +137,8 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
         </div>
       </div>
       <div class={"flex justify-between"}>
-        <p class={"mt-3 mb-2 text-white text-xl "}>
-          Livello {playerStats.milestones_reached + 1}: {LEVELS[playerStats.milestones_reached + 1]}
+        <p class={"mt-3 mb-2 text-white text-xl"}>
+          Livello {playerStats.milestones_reached + 1}/{LEVELS.length}: {LEVELS[playerStats.milestones_reached + 1]}
         </p>
         <p>
           <InstructionButton/>
@@ -150,7 +150,6 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
           <div class={"h-2 bg-grey rounded-full"}>
             {playerStats.milestones_reached + 1 < 10 && <div class={"h-2 bg-white rounded-full transition-all ease-linear duration-500"} style={`width: ${playerStats.development}%`}/>}
           </div>
-
         </div>
 
 
