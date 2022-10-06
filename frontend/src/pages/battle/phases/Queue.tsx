@@ -84,11 +84,6 @@ const Queue = (props: QueueProps) => {
     <>
       <div class={"mb-24 overflow-y-auto"}>
         {
-          !!gameState?.relayRoom && (
-            <p class={"text-white text-xl"}>In attesa...</p>
-          )
-        }
-        {
           playersLobbies()?.map((lobby, index) => {
             if (index === 0) {
               return (
@@ -113,6 +108,11 @@ const Queue = (props: QueueProps) => {
       </div>
 
       <div class={"text-white text-sm blue-rounded-container border-1 fixed bottom-0 left-0 right-0 px-5 py-8 flex items-center justify-between"}>
+
+        <Show when={gameState && gameState?.relayRoom && gameState?.relayTimer === 0}>
+          <p class={"text-white text-xl"}>In attesa...</p>
+        </Show>
+
         <Show when={gameState && gameState?.relayTimer >= 0}>
           <div>
             <p class={"text-grey"}>Prossima partita tra:</p>
