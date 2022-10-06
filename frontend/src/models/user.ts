@@ -11,3 +11,9 @@ export interface BattleInfoCurrentPlayer {
   development: number
   milestones_reached: number
 }
+
+export interface PlayerDetail {
+  name: string
+  connected: boolean
+  avatar: string
+}

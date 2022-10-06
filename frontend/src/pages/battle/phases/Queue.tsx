@@ -4,45 +4,20 @@ import {createMemo, createSignal, Show} from "solid-js";
 import InstructionButton from "../../../shared/components/InstructionButton";
 import {formatNextMatchInSeconds} from "../../../shared/helpers";
 import {MAX_PLAYERS, MIN_PLAYERS} from "../../../shared/constants";
+import {PlayerDetail} from "../../../models/user";
+import PlayerImageRounded from "../../../shared/components/PlayerImageRounded";
 
 interface QueueProps {
   players?: string[]
 }
 
-interface PlayerDetail {
-  name: string
-  connected: boolean
-  avatar: string
-}
-
 const PlayerRow = (props: { player: PlayerDetail, highlight: boolean }) => {
   const { player, highlight } = props;
-  const [ imgError, setImgError ] = createSignal(false);
-  const commonClasses = "w-[50px] h-[50px] mr-5 rounded-full border-2 border-black";
-  const gameState = useGameState();
-
-  const letters = () => {
-    // const [firstName, lastName] = props.player.name.split(" ");
-    //
-    // return (<>{firstName[0] || ""}&nbsp;{lastName[0] || ""}</>);
-
-    return (<>{props.player.name[0] || ""}</>);
-  }
 
   return (
     <li
       class={`${!player.connected ? "disconnected" : undefined} flex my-5 items-center ${highlight ? "bg-semitransparent-acquamarine" : "bg-semitransparent-grey"} rounded-[45px] p-1`}>
-      <Show when={!imgError()}>
-        <img src={player.avatar} alt=""
-             class={commonClasses}
-             onError={() => setImgError(true)}
-        />
-      </Show>
-      <Show when={imgError()}>
-        <div class={`${commonClasses} bg-white flex justify-center items-center text-xl`}>
-          {letters()}
-        </div>
-      </Show>
+      <PlayerImageRounded player={player}/>
       <span class={"text-white"}>{player.name}</span>
     </li>
   )
@@ -109,23 +84,25 @@ const Queue = (props: QueueProps) => {
 
       <div class={"text-white text-sm blue-rounded-container border-1 fixed bottom-0 left-0 right-0 px-5 py-8 flex items-center justify-between"}>
 
-        <Show when={gameState && gameState?.relayRoom && gameState?.relayTimer === 0}>
-          <p class={"text-white text-xl"}>In attesa...</p>
-        </Show>
+        <div>
+          <Show when={gameState && gameState?.relayRoom && gameState?.relayTimer === -1}>
+            <p class={"text-white text-xl"}>In attesa...</p>
+          </Show>
 
-        <Show when={gameState && gameState?.relayTimer >= 0}>
-          <div>
-            <p class={"text-grey"}>Prossima partita tra:</p>
-            <p class={"text-xl"}>{formatNextMatchInSeconds(gameState!.relayTimer)}</p>
-          </div>
-        </Show>
+          <Show when={gameState && gameState?.relayTimer >= 0}>
+            <div>
+              <p class={"text-grey"}>Prossima partita tra:</p>
+              <p class={"text-xl"}>{formatNextMatchInSeconds(gameState!.relayTimer)}</p>
+            </div>
+          </Show>
 
-        <Show when={props.players && props.players?.length < MIN_PLAYERS}>
-          <div>
-            <p class={"text-grey"}>In attesa di giocatori...</p>
-            <p class={"text-xl"}>{props.players?.length} / {MIN_PLAYERS}</p>
-          </div>
-        </Show>
+          <Show when={props.players && props.players?.length < MIN_PLAYERS}>
+            <div>
+              <p class={"text-grey"}>In attesa di giocatori...</p>
+              <p class={"text-xl"}>{props.players?.length} / {MIN_PLAYERS}</p>
+            </div>
+          </Show>
+        </div>
 
         <InstructionButton/>
       </div>
