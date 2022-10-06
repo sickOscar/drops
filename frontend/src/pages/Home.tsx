@@ -20,6 +20,10 @@ const Home = () => {
 
       <h1 class="text-2xl text-white text-center my-10">Are <span class={"text-orange-400"}>y</span>ou ready to <span class={"text-orange-400"}>s</span>pray?</h1>
 
+      <button onClick={authDispatch?.login} class={"h-[3em] mt-3 w-full acquamarine-button"}>
+        Accedi con i social
+      </button>
+
       <div class={"text-white overflow-y-auto"}>
         <p>
           Corre l’anno 2099.
@@ -57,9 +61,6 @@ const Home = () => {
           Armati di bombolette, colori e... vai di spray!
         </p>
       </div>
-      <button onClick={authDispatch?.login} class={"h-[3em] mt-3 w-full acquamarine-button"}>
-        Accedi con i social
-      </button>
     </div>
   )
 }

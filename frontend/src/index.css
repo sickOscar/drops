@@ -90,7 +90,7 @@ input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   height: 60px;
   width: 15px;
-  border-radius: 25%;
+  border-radius: 35%;
   background: #ffffff;
   /*pointer-events: auto;*/
 }

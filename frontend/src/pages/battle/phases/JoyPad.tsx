@@ -163,7 +163,7 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
         {/*</For>*/}
       </div>
 
-      <div class={"blue-rounded-container mt-2 pb-5 mb-[-1rem]"}>
+      <div class={"blue-rounded-container mt-5 pb-5 mb-[-1rem]"}>
 
         {/*<div class={"flex justify-between items-center px-5 mb-3"}>*/}
         {/*  <span class={"text-white"}>Controlli</span>*/}

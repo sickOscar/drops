@@ -19,6 +19,7 @@ const PlayerRow = (props: { player: PlayerDetail, highlight: boolean }) => {
   const { player, highlight } = props;
   const [ imgError, setImgError ] = createSignal(false);
   const commonClasses = "w-[50px] h-[50px] mr-5 rounded-full border-2 border-black";
+  const gameState = useGameState();
 
   const letters = () => {
     // const [firstName, lastName] = props.player.name.split(" ");
@@ -82,6 +83,11 @@ const Queue = (props: QueueProps) => {
   return (
     <>
       <div class={"mb-24 overflow-y-auto"}>
+        {
+          !!gameState?.relayRoom && (
+            <p class={"text-white text-xl"}>In attesa...</p>
+          )
+        }
         {
           playersLobbies()?.map((lobby, index) => {
             if (index === 0) {
