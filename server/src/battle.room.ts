@@ -213,6 +213,8 @@ export class BattleRoom extends Room<GameState> {
         '#FF6694',
         '#9F0B76',
         '#9896A5',
+        '#3c4fd2',
+        '#7fcc58',
       ];
 
       let index = 0;
