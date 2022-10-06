@@ -47,7 +47,7 @@ const MULTIPLAYER_HOST_VIEWER = import.meta.env.VITE_MULTIPLAYER_HOST_VIEWER;
 console.log('MULTIPLAYER_HOST', MULTIPLAYER_HOST);
 console.log('MULTIPLAYER_HOST_VIEWER', MULTIPLAYER_HOST_VIEWER);
 const MIN_PLAYERS = 2;
-const MAX_PLAYERS = 8;
+const MAX_PLAYERS = 3;
 
 const LEVELS = ["imbranato", "dilettante", "apprendista", "imbianchino", "vandalo", "graffitaro", "disegnatore", "pittore", "esteta", "artista", "re della strada"];
 
