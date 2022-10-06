@@ -14,7 +14,7 @@ mod milestones;
 use ipc::{start_ipc_sender, start_ipc_receiver};
 use game::{game_loop};
 
-pub const MAX_PLAYERS: i8 = 3;
+pub const MAX_PLAYERS: i8 = 8;
 pub const BOARD_SIZE: usize = 100;
 pub const MAX_ITERATIONS: i32 = 300;
 pub const TIME_BETWEEN_ITERATIONS: u64 = 500;
