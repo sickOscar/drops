@@ -166,7 +166,7 @@ export class BattleRoom extends Room<GameState> {
 
         client.send(this.state.players.size);
 
-        
+
       }
 
     })
