@@ -48,17 +48,16 @@ const JoyPadInput = (props: JoyPadInputProps) => {
       <div class={"joyPadInput__range-container flex flex-col border-1 rounded-[45px] bg-semitransparent-grey mx-auto w-[5.5rem] h-[45vh] p-4 mt-3 relative justify-between items-center main-shadow"}>
         <span class={`text-white z-30`} innerHTML={props.labelFormula(props.value)}></span>
         <input
-          class={"w-[30vh]"}
            onInput={handleInput}
            onChange={handleInputChange}
            type="range"
            min={0}
            max={100}
-           id={props.type}
-           value={props.value.toString()}
+           id={props.type.toLowerCase()}
+           // value={props.value.toString()}
            step={1}
            disabled={props.isDisabled}
-           class={`my-auto ${props.isDisabled ? 'locked' : null}`}
+           class={`my-auto ${props.isDisabled ? 'locked' : null} w-[30vh]`}
            style={backgroundInputStyle()}
         />
         <button class={"h-[50px] w-[50px] flex items-center justify-center mb-[-0.5em]"} onClick={(e: any) => props.onLock(props.type)}>

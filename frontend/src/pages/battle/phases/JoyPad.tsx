@@ -49,6 +49,10 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
     setJoyPadStore("military", "value", 34);
     setJoyPadStore("production", "value", 33);
     setJoyPadStore("research", "value", 33);
+
+    (document.querySelector('#' + SLIDER_TYPE.MILITARY.toLowerCase()) as HTMLInputElement).value = "34";
+    (document.querySelector('#' + SLIDER_TYPE.PRODUCTION.toLowerCase()) as HTMLInputElement).value = "33";
+    (document.querySelector('#' + SLIDER_TYPE.RESEARCH.toLowerCase()) as HTMLInputElement).value = "33";
   });
 
   createEffect((prev) => {
@@ -84,6 +88,8 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
         updateValue = difference > 0 ? oldValue.value + MAX_STEP_DIFF : oldValue.value - MAX_STEP_DIFF;
       }
 
+      (document.querySelector('#' + type.toLowerCase()) as HTMLInputElement).value = Math.round(updateValue).toString();
+
       return { value: Math.round(updateValue) };
     });
 
@@ -91,7 +97,11 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
       for (let sliderType in SLIDER_TYPE) {
         if (type !== sliderType && !joyPadStore[sliderType.toLowerCase() as SLIDER_TYPE].disabled) {
           setJoyPadStore(sliderType.toLowerCase() as SLIDER_TYPE,(oldValue) => {
-            return { value: Math.round(valueBetweenMinAndMax(oldValue.value - ((sum - maxTotal) / (2 - blocked)), MIN, MAX)) };
+            const newValue = Math.round(valueBetweenMinAndMax(oldValue.value - ((sum - maxTotal) / (2 - blocked)), MIN, MAX));
+
+            (document.querySelector('#' + sliderType.toLowerCase()) as HTMLInputElement).value = newValue.toString();
+
+            return { value: newValue };
           });
         }
       }
