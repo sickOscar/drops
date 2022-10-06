@@ -166,10 +166,7 @@ export class BattleRoom extends Room<GameState> {
 
         client.send(this.state.players.size);
 
-        // if (this.state.players.size === Globals.playersForThisGame) {
-        //     this.startGame();
-        // }
-
+        
       }
 
     })
