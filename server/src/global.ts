@@ -8,7 +8,6 @@ interface GlobalsContainer {
   playersForThisGame: number;
 }
 
-
 export const Globals: GlobalsContainer = {
   GAME_WAITING_TIME: 15000,
   GAME_EXIT_TIME: 15000,
