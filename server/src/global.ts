@@ -14,7 +14,7 @@ export const Globals: GlobalsContainer = {
   GAME_MAX_ROUNDS: 300,
   // The number of players in the game
   MIN_PLAYERS_NUMBER: 2,
-  MAX_PLAYERS_NUMBER: 3,
+  MAX_PLAYERS_NUMBER: 8,
   // socket.io sending seockt for field
   viewerSocket: undefined,
   playersForThisGame: 0
