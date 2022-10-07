@@ -438,6 +438,7 @@ const Viewer = () => {
                 viewerState && viewerState.playersMap && Object.values(viewerState.playersMap)
                   .sort((a, b) => b.score - a.score)[0].name
               }</span>
+
             </h1>
             {/*<h2>Hall of fame</h2>*/}
             {/*<div class="flex flex-col">*/}
