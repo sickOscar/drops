@@ -436,7 +436,7 @@ const Viewer = () => {
               Il miglior teppista è stato <br/>
               <span class="text-7xl">{
                 viewerState && viewerState.playersMap && Object.values(viewerState.playersMap)
-                  .sort((a, b) => b.res - a.res)[0].name
+                  .sort((a, b) => b.score - a.score)[0].name
               }</span>
             </h1>
             {/*<h2>Hall of fame</h2>*/}
