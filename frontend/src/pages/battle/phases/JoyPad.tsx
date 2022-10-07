@@ -148,7 +148,7 @@ const JoyPad = ({onChange, playerStats}: JoyPadProps) => {
       </div>
       <div class={"flex justify-between"}>
         <p class={"mt-3 mb-2 text-white text-xl"}>
-          Livello {playerStats.milestones_reached + 1}/{LEVELS.length}: {LEVELS[playerStats.milestones_reached + 1]}
+          Livello {playerStats.milestones_reached + 1}/{LEVELS.length - 1}: {LEVELS[playerStats.milestones_reached + 1]}
         </p>
         <p>
           <InstructionButton/>
